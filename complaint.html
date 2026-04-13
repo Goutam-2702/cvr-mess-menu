@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CVR Mess Complaint Box - Report issues directly to the Mess Committee.">
+  <title>Mess Complaint — CVR Hostel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #f0f4ff;
+      --surface:   #ffffff;
+      --surface2:  #f8faff;
+      --border:    rgba(0,51,102,0.13);
+      --text:      #1a1a2e;
+      --text2:     #4a5568;
+      --text3:     #718096;
+      --accent:    #003366;
+      --accent2:   #0056b3;
+      --accent-g:  rgba(0,51,102,0.2);
+      --green:     #10b981;
+      --green-bg:  #ecfdf5;
+      --red:       #ef4444;
+      --red-bg:    #fef2f2;
+      --shadow-md: 0 6px 30px rgba(0,51,102,0.15);
+      --shadow-lg: 0 12px 50px rgba(0,51,102,0.22);
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+      --t: 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 28px 16px 60px;
+      color: var(--text);
+      position: relative;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(0,51,102,.07) 0%,transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 85%, rgba(239,68,68,.05) 0%,transparent 60%);
+    }
+
+    /* BACK BUTTON */
+    .back-link {
+      position: fixed;
+      top: 18px; left: 18px;
+      display: flex; align-items: center; gap: 6px;
+      color: var(--accent); font-size: .85rem; font-weight: 600;
+      text-decoration: none;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 16px;
+      box-shadow: 0 2px 10px rgba(0,51,102,.1);
+      transition: all var(--t);
+      z-index: 100;
+    }
+    .back-link:hover { background: var(--accent); color: white; border-color: var(--accent); transform: translateX(-2px); }
+
+    /* CARD */
+    .complaint-card {
+      width: 100%;
+      max-width: 500px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    /* CARD HEADER */
+    .card-header {
+      background: linear-gradient(135deg, var(--red) 0%, #dc2626 100%);
+      padding: 28px 28px 22px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header::before {
+      content: ''; position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,.1);
+    }
+    .card-header::after {
+      content: ''; position: absolute; bottom: -20px; left: -20px;
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,.08);
+    }
+    .header-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      display: block;
+      position: relative; z-index: 1;
+    }
+    .card-header h1 {
+      font-size: 1.4rem; font-weight: 800; color: white;
+      margin-bottom: 6px; position: relative; z-index: 1;
+      background: none; -webkit-text-fill-color: white;
+    }
+    .card-header p {
+      font-size: .82rem; color: rgba(255,255,255,.8);
+      position: relative; z-index: 1; line-height: 1.5;
+    }
+
+    /* FORM */
+    .form-body { padding: 28px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: .75rem; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      font-family: 'Inter', sans-serif;
+      font-size: .92rem; font-weight: 500;
+      color: var(--text); background: var(--surface2);
+      transition: border-color var(--t), box-shadow var(--t);
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.15);
+    }
+    .form-control::placeholder { color: var(--text3); font-weight: 400; }
+    textarea.form-control { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+    /* CATEGORY GRID */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .cat-option { display:none; }
+    .cat-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text2);
+      background: var(--surface2);
+      transition: all var(--t);
+    }
+    .cat-label .cat-emoji { font-size: 1.1rem; }
+    .cat-option:checked + .cat-label {
+      border-color: var(--red);
+      background: var(--red-bg);
+      color: var(--red);
+      box-shadow: 0 2px 8px rgba(239,68,68,.15);
+    }
+    .cat-label:hover { border-color: var(--red); color: var(--red); }
+
+    /* SEVERITY */
+    .severity-row {
+      display: flex; gap: 8px;
+    }
+    .sev-option { display:none; }
+    .sev-label {
+      flex: 1; text-align: center; padding: 8px 4px;
+      border: 1.5px solid var(--border); border-radius: var(--r-md);
+      cursor: pointer; font-size: .78rem; font-weight: 700;
+      color: var(--text3); background: var(--surface2);
+      transition: all var(--t);
+    }
+    .sev-option[value="Low"]:checked + .sev-label     { border-color:#10b981; background:#ecfdf5; color:#10b981; }
+    .sev-option[value="Medium"]:checked + .sev-label  { border-color:#f59e0b; background:#fffbeb; color:#f59e0b; }
+    .sev-option[value="High"]:checked + .sev-label    { border-color:#ef4444; background:#fef2f2; color:#ef4444; }
+    .sev-option[value="Critical"]:checked + .sev-label{ border-color:#7c3aed; background:#f5f3ff; color:#7c3aed; }
+
+    /* FILE UPLOAD */
+    .file-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--r-md);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--t);
+      background: var(--surface2);
+      position: relative;
+    }
+    .file-zone:hover { border-color: var(--red); background: var(--red-bg); }
+    .file-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .file-zone-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .file-zone-text { font-size: .85rem; color: var(--text3); font-weight: 500; }
+    .file-zone-sub  { font-size: .72rem; color: var(--text3); margin-top: 3px; }
+    #fileNameDisplay {
+      margin-top: 10px; font-size: .8rem; font-weight: 600;
+      color: var(--green); display: none;
+    }
+    #fileNameDisplay.show { display: block; }
+
+    /* SUBMIT BUTTON */
+    .submit-btn {
+      width: 100%; padding: 15px 24px;
+      border: none; border-radius: var(--r-md);
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white; font-family: 'Inter', sans-serif;
+      font-size: .95rem; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 6px 20px rgba(34,197,94,.35);
+      transition: all var(--t); letter-spacing: .3px;
+    }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(34,197,94,.45); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn svg { flex-shrink: 0; }
+
+    /* SUCCESS STATE */
+    .success-state {
+      display: none; text-align: center; padding: 32px 20px;
+    }
+    .success-state.show { display: block; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 16px; animation: pop .5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+    .success-title { font-size: 1.3rem; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+    .success-msg { font-size: .9rem; color: var(--text3); line-height: 1.6; margin-bottom: 20px; }
+    .new-complaint-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 22px; border-radius: 30px;
+      background: var(--surface2); color: var(--accent);
+      border: 1.5px solid var(--border); font-family: 'Inter',sans-serif;
+      font-size: .85rem; font-weight: 700; cursor: pointer;
+      transition: all var(--t);
+    }
+    .new-complaint-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* DIVIDER */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 18px 0; font-size: .75rem; color: var(--text3); font-weight: 600;
+    }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+    /* INFO CHIPS */
+    .info-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+    .info-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px;
+      background: rgba(0,51,102,.07); color: var(--accent2);
+      font-size: .74rem; font-weight: 600;
+    }
+
+    @media (max-width: 480px) {
+      .form-body { padding: 20px 18px; }
+      .category-grid { grid-template-columns: 1fr; }
+      .card-header { padding: 22px 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BACK BUTTON -->
+  <a href="index.html" class="back-link">← Back to Menu</a>
+
+  <div class="complaint-card">
+    <!-- HEADER -->
+    <div class="card-header">
+      <span class="header-icon">📢</span>
+      <h1>Mess Complaint Box</h1>
+      <p>Your feedback goes directly to the Mess Committee via WhatsApp. We take every complaint seriously.</p>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-body" id="complaintForm">
+
+      <div class="info-row">
+        <span class="info-chip">⚡ Instant WhatsApp delivery</span>
+        <span class="info-chip">🔒 Anonymous option</span>
+        <span class="info-chip">📱 Quick response</span>
+      </div>
+
+      <!-- Name -->
+      <div class="form-group">
+        <label>Your Name <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <input type="text" id="studentName" class="form-control" placeholder="e.g. Rahul Sharma (Room 204)">
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label>Issue Category *</label>
+        <div class="category-grid">
+          <input type="radio" name="cat" id="cat1" class="cat-option" value="Food Quality" checked>
+          <label for="cat1" class="cat-label"><span class="cat-emoji">🍽️</span>Food Quality</label>
+
+          <input type="radio" name="cat" id="cat2" class="cat-option" value="Hygiene/Cleanliness">
+          <label for="cat2" class="cat-label"><span class="cat-emoji">🧹</span>Hygiene</label>
+
+          <input type="radio" name="cat" id="cat3" class="cat-option" value="Shortage of Food">
+          <label for="cat3" class="cat-label"><span class="cat-emoji">📦</span>Food Shortage</label>
+
+          <input type="radio" name="cat" id="cat4" class="cat-option" value="Staff Behavior">
+          <label for="cat4" class="cat-label"><span class="cat-emoji">👤</span>Staff Behavior</label>
+
+          <input type="radio" name="cat" id="cat5" class="cat-option" value="Late Service">
+          <label for="cat5" class="cat-label"><span class="cat-emoji">⏰</span>Late Service</label>
+
+          <input type="radio" name="cat" id="cat6" class="cat-option" value="Other">
+          <label for="cat6" class="cat-label"><span class="cat-emoji">📝</span>Other</label>
+        </div>
+      </div>
+
+      <!-- Severity -->
+      <div class="form-group">
+        <label>Severity Level</label>
+        <div class="severity-row">
+          <input type="radio" name="sev" id="sev1" class="sev-option" value="Low" checked>
+          <label for="sev1" class="sev-label">😐 Low</label>
+
+          <input type="radio" name="sev" id="sev2" class="sev-option" value="Medium">
+          <label for="sev2" class="sev-label">⚠️ Medium</label>
+
+          <input type="radio" name="sev" id="sev3" class="sev-option" value="High">
+          <label for="sev3" class="sev-label">🔴 High</label>
+
+          <input type="radio" name="sev" id="sev4" class="sev-option" value="Critical">
+          <label for="sev4" class="sev-label">🚨 Critical</label>
+        </div>
+      </div>
+
+      <!-- Complaint text -->
+      <div class="form-group">
+        <label>Describe the Issue *</label>
+        <textarea id="complaintText" class="form-control" placeholder="Please describe what went wrong in detail. The more specific you are, the better we can help!" required></textarea>
+        <div style="font-size:.72rem;color:var(--text3);text-align:right;margin-top:4px" id="txtCount">0 characters</div>
+      </div>
+
+      <!-- Photo upload -->
+      <div class="form-group">
+        <label>Attach Photo <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <div class="file-zone">
+          <input type="file" id="file-upload" accept="image/*" onchange="onFileSelect()">
+          <div class="file-zone-icon">📷</div>
+          <div class="file-zone-text">Tap to attach a photo</div>
+          <div class="file-zone-sub">JPG, PNG up to 10 MB</div>
+        </div>
+        <div id="fileNameDisplay">✅ <span id="fName"></span></div>
+      </div>
+
+      <div class="divider">Send via</div>
+
+      <!-- Submit -->
+      <button type="button" class="submit-btn" onclick="submitComplaint()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.224-3.92c1.516.903 3.009 1.354 4.547 1.355 5.417 0 9.825-4.406 9.828-9.822.001-2.624-1.022-5.091-2.879-6.948-1.856-1.857-4.323-2.88-6.947-2.88-5.418 0-9.825 4.408-9.828 9.825-.001 1.73.447 3.418 1.301 4.888l-1.002 3.66 3.754-.984zm11.332-6.72c-.066-.109-.242-.175-.506-.307-.264-.132-1.558-.769-1.799-.856-.242-.087-.417-.132-.594.133-.176.265-.682.856-.836 1.032-.154.177-.308.198-.573.066-.264-.132-1.114-.41-2.122-1.31-.784-.699-1.314-1.564-1.468-1.828-.154-.265-.016-.408.116-.54.118-.119.264-.308.396-.463.132-.154.176-.264.264-.44.088-.177.044-.33-.022-.463-.066-.132-.594-1.432-.814-1.961-.214-.515-.45-.445-.62-.453l-.528-.007c-.176 0-.462.066-.704.33-.242.264-.924.903-.924 2.203 0 1.299.946 2.555 1.078 2.731.132.176 1.861 2.842 4.508 3.982.63.27 1.12.431 1.502.552.633.201 1.208.173 1.662.105.508-.077 1.558-.638 1.778-1.256.22-.617.22-1.144.154-1.256z"/></svg>
+        Send via WhatsApp
+      </button>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-state" id="successState">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Complaint Submitted!</div>
+      <div class="success-msg">Your complaint has been sent to the Mess Committee via WhatsApp. We'll look into it as soon as possible. Thank you for helping us improve!</div>
+      <button class="new-complaint-btn" onclick="resetForm()">+ Submit Another Complaint</button>
+    </div>
+  </div>
+
+  <script>
+    // File select
+    function onFileSelect() {
+      const input = document.getElementById("file-upload");
+      const display = document.getElementById("fileNameDisplay");
+      const fname   = document.getElementById("fName");
+      if (input.files.length > 0) {
+        fname.textContent = input.files[0].name;
+        display.classList.add("show");
+      } else {
+        display.classList.remove("show");
+      }
+    }
+
+    // Text count
+    document.getElementById("complaintText").addEventListener("input", function() {
+      document.getElementById("txtCount").textContent = this.value.length + " characters";
+    });
+
+    // Submit
+    function submitComplaint() {
+      const name     = document.getElementById("studentName").value.trim() || "Anonymous";
+      const category = document.querySelector('input[name="cat"]:checked')?.value || "General";
+      const severity = document.querySelector('input[name="sev"]:checked')?.value || "Low";
+      const message  = document.getElementById("complaintText").value.trim();
+      const fileInput = document.getElementById("file-upload");
+
+      if (!message) {
+        document.getElementById("complaintText").focus();
+        document.getElementById("complaintText").style.borderColor = "#ef4444";
+        setTimeout(() => document.getElementById("complaintText").style.borderColor = "", 2000);
+        return;
+      }
+
+      const phoneNumber = "916372019170";
+      let photoNote = "";
+      if (fileInput.files.length > 0) {
+        photoNote = "%0A%0A📸 *Note:* A photo is attached (" + fileInput.files[0].name + ")";
+      }
+
+      const now = new Date().toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" });
+      const msg = `*🔔 CVR Mess Complaint*%0A` +
+                  `━━━━━━━━━━━━━━━━━━━━%0A` +
+                  `*From:* ${name}%0A` +
+                  `*Category:* ${category}%0A` +
+                  `*Severity:* ${severity}%0A` +
+                  `*Time:* ${now}%0A` +
+                  `━━━━━━━━━━━━━━━━━━━━%0A` +
+                  `*Details:*%0A${message.replace(/\n/g,'%0A')}${photoNote}`;
+
+      const url = `https://wa.me/${phoneNumber}?text=${msg}`;
+      window.open(url, '_blank');
+
+      // Show success state
+      document.getElementById("complaintForm").style.display  = "none";
+      document.getElementById("successState").classList.add("show");
+    }
+
+    function resetForm() {
+      document.getElementById("complaintText").value = "";
+      document.getElementById("studentName").value   = "";
+      document.getElementById("file-upload").value   = "";
+      document.getElementById("fileNameDisplay").classList.remove("show");
+      document.getElementById("txtCount").textContent = "0 characters";
+      document.getElementById("complaintForm").style.display  = "block";
+      document.getElementById("successState").classList.remove("show");
+      // Reset radio buttons
+      document.getElementById("cat1").checked = true;
+      document.getElementById("sev1").checked = true;
+    }
+  </script>
+</body>
+</html>

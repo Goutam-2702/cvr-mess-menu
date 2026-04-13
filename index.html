@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="C V Raman Hostel Mess Menu - Daily menu, timings, and notices for CVR hostel students.">
+  <meta name="theme-color" content="#003366" id="themeMetaColor">
+  <meta name="google-site-verification" content="7MSF7MhoAxVwIA3LYw68F84VTrQ0ZabgE_tXMzAdt7o" />
+  <title>CVR Mess Menu</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="logo.jpeg">
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- OneSignal -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "185be472-7829-4bd3-8d84-7359ff2b7d78",
+        notifyButton: { enable: false },
+        allowLocalhostAsSecureOrigin: true,
+      });
+      // Store OneSignal globally for the notification prompt
+      window._OneSignal = OneSignal;
+    });
+  </script>
+</head>
+<body>
+
+  <!-- TOAST -->
+  <div id="toast-container"></div>
+
+  <!-- NOTIFICATION PERMISSION MODAL -->
+  <div class="notif-overlay" id="notifOverlay">
+    <div class="notif-modal" id="notifModal">
+      <div class="notif-icon">🔔</div>
+      <h2 class="notif-title">Stay Updated!</h2>
+      <p class="notif-desc">Get instant alerts when the mess menu changes or a new notice is posted. Never miss a special dinner!</p>
+      <div class="notif-features">
+        <span class="notif-feat">🍽️ Menu updates</span>
+        <span class="notif-feat">📢 Notices</span>
+        <span class="notif-feat">⭐ Special dinners</span>
+      </div>
+      <button class="notif-allow-btn" onclick="allowNotifications()">🔔 Allow Notifications</button>
+      <button class="notif-skip-btn" onclick="skipNotifications()">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-inner" onclick="event.stopPropagation()">
+      <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+      <img id="lightboxImg" src="" alt="">
+      <div class="lightbox-name" id="lightboxName"></div>
+      <div class="lightbox-tag"  id="lightboxTag"></div>
+    </div>
+  </div>
+
+  <!-- SPEED-DIAL BACKDROP -->
+  <div class="speed-dial-backdrop" id="sdBackdrop" onclick="closeSpeedDial()"></div>
+
+  <!-- DARK MODE TOGGLE -->
+  <button id="darkModeToggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">🌙</button>
+
+  <!-- HEADER -->
+  <div class="logo-container">
+    <img src="logo.jpeg" alt="C V Raman Hostel Mess Logo" class="main-logo">
+    <span class="college-subtitle">C V RAMAN HOSTEL · IIT PATNA</span>
+  </div>
+  <h1>Mess Menu 🍽️</h1>
+
+  <!-- LIVE TICKER -->
+  <div class="live-ticker">
+    <span class="live-badge">LIVE</span>
+    <span class="ticker-text" id="tickerText">Loading latest updates…</span>
+  </div>
+
+  <!-- SPECIAL EVENT BANNER -->
+  <div class="special-event-banner" id="specialEventBanner">
+    <div class="se-label">⭐ Special Dinner Tonight</div>
+    <div class="se-title" id="seTitle">Special Event</div>
+    <div class="se-details" id="seDetails"></div>
+    <div class="se-time" id="seTime">🕒 Time</div>
+  </div>
+
+  <!-- NOTICE BOARD -->
+  <div class="notice-board" id="noticeBoardWrap">
+    <div class="notice-header">
+      <span>📢</span>
+      <h4>Mess Committee Notice</h4>
+    </div>
+    <p id="committeeNotice">Loading notice…</p>
+    <div id="noticeDateStamp"></div>
+  </div>
+
+  <!-- DAY TABS -->
+  <div class="day-tabs" id="dayTabs">
+    <button class="day-tab" data-day="Monday">Mon</button>
+    <button class="day-tab" data-day="Tuesday">Tue</button>
+    <button class="day-tab" data-day="Wednesday">Wed</button>
+    <button class="day-tab" data-day="Thursday">Thu</button>
+    <button class="day-tab" data-day="Friday">Fri</button>
+    <button class="day-tab" data-day="Saturday">Sat</button>
+    <button class="day-tab" data-day="Sunday">Sun</button>
+  </div>
+
+  <!-- Hidden daySelect kept for JS compatibility -->
+  <select id="daySelect" style="display:none" aria-hidden="true">
+    <option value="Monday">Monday</option>
+    <option value="Tuesday">Tuesday</option>
+    <option value="Wednesday">Wednesday</option>
+    <option value="Thursday">Thursday</option>
+    <option value="Friday">Friday</option>
+    <option value="Saturday">Saturday</option>
+    <option value="Sunday">Sunday</option>
+  </select>
+
+  <!-- MESS TIMINGS -->
+  <div class="timing-box">
+    <h3 id="timingTitle">🕒 Weekday Timings (Mon – Fri)</h3>
+    <div class="timing-grid">
+      <div class="time-item"><strong>🍳 Breakfast</strong><span id="bt">7:30 AM – 9:30 AM</span></div>
+      <div class="time-item"><strong>🍱 Lunch</strong><span id="lt">12:30 PM – 2:30 PM</span></div>
+      <div class="time-item"><strong>☕ Snacks</strong><span id="st">5:30 PM – 6:30 PM</span></div>
+      <div class="time-item"><strong>🍛 Dinner</strong><span id="dt">8:00 PM – 10:00 PM</span></div>
+    </div>
+  </div>
+
+  <!-- ACTION CARDS: Chat + Complaint -->
+  <div class="action-cards">
+    <button class="action-card ac-chat" onclick="openChat()" aria-label="Chat with Mess Bot">
+      <div class="ac-icon">💬</div>
+      <div class="ac-text">
+        <div class="ac-title">Ask Mess Bot</div>
+        <div class="ac-sub">Menu, timings, notices…</div>
+      </div>
+      <div class="ac-arrow">›</div>
+    </button>
+    <a href="complaint.html" class="action-card ac-complaint" aria-label="File Complaint">
+      <div class="ac-icon">📢</div>
+      <div class="ac-text">
+        <div class="ac-title">File Complaint</div>
+        <div class="ac-sub">Report an issue via WhatsApp</div>
+      </div>
+      <div class="ac-arrow">›</div>
+    </a>
+  </div>
+
+  <!-- MENU OUTPUT -->
+  <div id="menuOutput">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <span>Loading today's menu…</span>
+    </div>
+  </div>
+
+  <!-- EVERYDAY ESSENTIALS -->
+  <div class="everyday-box">
+    <h3>📅 Everyday Essentials</h3>
+    <div class="everyday-item"><strong>🍳 Breakfast:</strong> Bread, Butter, Jam, Tea, Milk with Coco Powder, Corn Flakes, Boiled Egg, Seasonal Fruit, Sprouts</div>
+    <div class="everyday-item"><strong>🍱 Lunch:</strong> Salad, Pickle</div>
+    <div class="everyday-item"><strong>☕ Snacks:</strong> Tea / Coffee, Toast</div>
+    <div class="everyday-item"><strong>🍛 Dinner:</strong> Salad, Pickle</div>
+  </div>
+
+  <!-- FOOD GALLERY -->
+  <div class="gallery-section" id="gallerySection">
+    <div class="gallery-section-header">
+      <h3>📸 Dish Gallery</h3>
+      <span class="gallery-count-badge" id="galleryCount">Loading…</span>
+    </div>
+    <div class="dish-grid" id="dishGrid">
+      <div class="gallery-empty">
+        <div class="spinner" style="margin:0 auto 10px"></div>
+        Loading photos…
+      </div>
+    </div>
+  </div>
+
+  <!-- REBATE -->
+  <a href="http://10.15.7.7/messIITP/web/index.php" target="_blank" rel="noopener noreferrer" class="rebate-btn">
+    📄 Apply for Mess Rebate
+  </a>
+
+  <!-- SPEED-DIAL FAB -->
+  <div class="speed-dial" id="speedDial">
+    <div class="speed-dial-menu" id="speedDialMenu">
+      <!-- Chat -->
+      <div class="speed-dial-item">
+        <span class="speed-dial-label">Ask Mess Bot</span>
+        <button class="speed-dial-btn sd-chat" onclick="openChat()" aria-label="Open chatbot">💬</button>
+      </div>
+      <!-- Gallery -->
+      <div class="speed-dial-item">
+        <span class="speed-dial-label">Dish Photos</span>
+        <button class="speed-dial-btn sd-gallery" onclick="scrollToGallery()" aria-label="View dish gallery">📸</button>
+      </div>
+      <!-- Complaint -->
+      <div class="speed-dial-item">
+        <span class="speed-dial-label">File Complaint</span>
+        <a href="complaint.html" class="speed-dial-btn sd-complaint" aria-label="File a complaint">📢</a>
+      </div>
+    </div>
+    <button class="speed-dial-trigger" id="speedDialTrigger" onclick="toggleSpeedDial()" aria-label="Open actions menu">＋</button>
+  </div>
+
+  <!-- CHATBOT -->
+  <div id="chat-container" role="dialog" aria-label="Mess Assistant Chatbot">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <div class="chat-title">Mess Assistant</div>
+          <div class="chat-status">● Online – Ask me anything!</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="closeChat()" aria-label="Close chat">✕</button>
+    </div>
+    <div class="quick-replies" id="quickReplies">
+      <button class="quick-chip" onclick="sendQuick(&quot;What's today's menu?&quot;)">Today's menu</button>
+      <button class="quick-chip" onclick="sendQuick('What time is lunch?')">Lunch time</button>
+      <button class="quick-chip" onclick="sendQuick('Any special dinner?')">Special dinner?</button>
+      <button class="quick-chip" onclick="sendQuick('How to complain?')">Complain</button>
+    </div>
+    <div id="chat-content" aria-live="polite">
+      <div class="bot-msg">
+        <div class="bot-icon">🤖</div>
+        <span>👋 Hi! I'm your Mess Assistant. Ask about today's menu, timings, special events, dish photos, or how to complain!</span>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Ask anything about the mess…" autocomplete="off" aria-label="Chat input">
+      <button class="chat-send-btn" onclick="handleChat()" aria-label="Send message">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>Made with ❤️ by <strong>Goutam (G.K.G)</strong></span>
+    <span>·</span>
+    <a href="admin.html">Admin Panel</a>
+  </footer>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

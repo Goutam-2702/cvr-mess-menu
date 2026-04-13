@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR Mess — Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#f0f4ff; --surface:#fff; --surface2:#f8faff; --border:rgba(0,51,102,.14);
+      --accent:#003366; --accent2:#0056b3; --accent-g:rgba(0,51,102,.2);
+      --text:#1a1a2e; --text2:#4a5568; --text3:#718096;
+      --green:#10b981; --green-bg:#ecfdf5; --yellow:#f59e0b; --yellow-bg:#fffbeb;
+      --red:#ef4444; --purple:#7c3aed;
+      --shadow-sm:0 2px 8px rgba(0,51,102,.08); --shadow-md:0 6px 24px rgba(0,51,102,.14); --shadow-lg:0 12px 40px rgba(0,51,102,.2);
+      --r-sm:8px; --r-md:14px; --r-lg:18px; --r-xl:24px; --t:.28s cubic-bezier(.4,0,.2,1);
+    }
+    body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:20px 16px 60px; }
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background: radial-gradient(ellipse 80% 50% at 20% 20%,rgba(0,51,102,.07) 0%,transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,86,179,.05) 0%,transparent 60%);
+    }
+    body > * { position:relative; z-index:1; }
+    .admin-wrap { max-width:800px; margin:0 auto; }
+
+    /* HEADER */
+    .admin-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+    .header-brand { display:flex; align-items:center; gap:14px; }
+    .header-brand img { width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--accent); }
+    .header-title { font-size:1.5rem; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .header-sub { font-size:.78rem; color:var(--text3); margin-top:2px; }
+
+    /* TABS */
+    .tab-bar { display:flex; gap:4px; margin-bottom:24px; border-bottom:2px solid var(--border); overflow-x:auto; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-btn { padding:10px 16px; border:none; background:transparent; color:var(--text3); font-family:'Inter',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all var(--t); border-radius:var(--r-sm) var(--r-sm) 0 0; white-space:nowrap; }
+    .tab-btn:hover { color:var(--accent2); background:rgba(0,51,102,.04); }
+    .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); background:rgba(0,51,102,.05); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* CARD */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:24px; margin-bottom:18px; box-shadow:var(--shadow-sm); }
+    .card-title { font-size:.95rem; font-weight:700; color:var(--accent); margin-bottom:16px; display:flex; align-items:center; gap:8px; padding-bottom:12px; border-bottom:1.5px solid var(--border); }
+
+    /* FORM */
+    label { display:block; font-size:.75rem; font-weight:700; color:var(--text3); letter-spacing:.5px; text-transform:uppercase; margin-bottom:5px; }
+    input, textarea, select { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:var(--r-sm); font-family:'Inter',sans-serif; font-size:.9rem; font-weight:500; color:var(--text); background:var(--surface2); transition:border-color var(--t),box-shadow var(--t); outline:none; }
+    input:focus, textarea:focus, select:focus { border-color:var(--accent2); box-shadow:0 0 0 3px var(--accent-g); }
+    input::placeholder, textarea::placeholder { color:var(--text3); font-weight:400; }
+    textarea { resize:vertical; min-height:90px; }
+    .form-row { margin-bottom:14px; }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+    /* BUTTONS */
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 24px; border:none; border-radius:var(--r-md); font-family:'Inter',sans-serif; font-size:.9rem; font-weight:700; cursor:pointer; transition:all var(--t); width:100%; margin-top:6px; }
+    .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; box-shadow:0 4px 14px var(--accent-g); }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px var(--accent-g); }
+    .btn-green  { background:linear-gradient(135deg,#059669,#10b981); color:white; box-shadow:0 4px 14px rgba(16,185,129,.3); }
+    .btn-green:hover  { transform:translateY(-2px); }
+    .btn-purple { background:linear-gradient(135deg,var(--purple),#9333ea); color:white; box-shadow:0 4px 14px rgba(124,58,237,.3); }
+    .btn-purple:hover { transform:translateY(-2px); }
+    .btn-red    { background:linear-gradient(135deg,#dc2626,var(--red)); color:white; box-shadow:0 4px 14px rgba(239,68,68,.3); }
+    .btn-red:hover    { transform:translateY(-2px); }
+    .btn-orange { background:linear-gradient(135deg,#d97706,#f59e0b); color:white; box-shadow:0 4px 14px rgba(245,158,11,.3); }
+    .btn-orange:hover { transform:translateY(-2px); }
+    .btn-sm { padding:7px 16px; font-size:.82rem; width:auto; margin-top:0; }
+    .btn-group { display:flex; gap:10px; margin-top:6px; }
+    .btn-group .btn { flex:1; }
+
+    /* DAY SELECTOR */
+    .day-selector { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
+    .day-sel-btn { padding:7px 14px; border-radius:30px; border:1.5px solid var(--border); background:var(--surface2); color:var(--text2); font-size:.82rem; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all var(--t); }
+    .day-sel-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+    .day-sel-btn.active { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:white; box-shadow:0 4px 12px var(--accent-g); }
+
+    /* STATS */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:14px; text-align:center; box-shadow:var(--shadow-sm); }
+    .stat-val { font-size:1.7rem; font-weight:800; color:var(--accent); }
+    .stat-lbl { font-size:.68rem; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+
+    /* SAVE STATUS */
+    #saveStatus { display:none; align-items:center; gap:6px; font-size:.82rem; font-weight:600; color:var(--green); background:var(--green-bg); padding:8px 14px; border-radius:30px; margin-bottom:12px; }
+
+    /* PREVIEW */
+    .preview-box { background:var(--surface2); border:1.5px dashed var(--border); border-radius:var(--r-md); padding:16px; margin-top:14px; }
+    .preview-box h4 { color:var(--text3); font-size:.75rem; letter-spacing:.5px; text-transform:uppercase; margin-bottom:10px; }
+    .preview-row { display:flex; gap:8px; margin-bottom:7px; font-size:.88rem; }
+    .preview-label { width:80px; font-weight:700; color:var(--text3); flex-shrink:0; }
+
+    /* NOTICE LIST */
+    .notice-list { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
+    .notice-item { background:var(--yellow-bg); border:1px solid rgba(245,158,11,.3); border-radius:var(--r-sm); padding:12px 14px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    .notice-item .nc { flex:1; }
+    .notice-item .ntitle { font-weight:700; font-size:.88rem; color:var(--text); margin-bottom:3px; }
+    .notice-item .nbody  { font-size:.82rem; color:var(--text2); }
+    .notice-item .nmeta  { font-size:.7rem; color:var(--text3); margin-top:4px; }
+    .del-btn { background:rgba(239,68,68,.1); color:var(--red); border:1px solid rgba(239,68,68,.2); border-radius:var(--r-sm); padding:6px 10px; cursor:pointer; font-size:.78rem; font-weight:700; font-family:'Inter',sans-serif; transition:all var(--t); }
+    .del-btn:hover { background:var(--red); color:white; }
+
+    /* GALLERY ADMIN GRID */
+    .dish-admin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-top:16px; }
+    .dish-admin-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); overflow:hidden; box-shadow:var(--shadow-sm); position:relative; }
+    .dish-admin-card img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
+    .dish-admin-card .dname { padding:7px 10px; font-size:.82rem; font-weight:700; color:var(--text); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .dish-admin-card .dcat  { padding:0 10px 8px; font-size:.7rem; color:var(--text3); text-align:center; }
+    .dish-del-overlay { position:absolute; top:6px; right:6px; background:rgba(239,68,68,.85); color:white; border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.85rem; opacity:0; transition:opacity var(--t); }
+    .dish-admin-card:hover .dish-del-overlay { opacity:1; }
+
+    /* UPLOAD ZONE */
+    .upload-zone { border:2px dashed var(--border); border-radius:var(--r-md); padding:28px; text-align:center; cursor:pointer; transition:all var(--t); background:var(--surface2); }
+    .upload-zone:hover { border-color:var(--accent2); background:rgba(0,86,179,.03); }
+    .upload-zone.drag-over { border-color:var(--accent); background:rgba(0,51,102,.05); }
+    .upload-zone .uz-icon { font-size:2.2rem; margin-bottom:8px; }
+    .upload-zone .uz-text { font-size:.88rem; color:var(--text3); font-weight:500; }
+    .upload-zone .uz-sub  { font-size:.75rem; color:var(--text3); margin-top:4px; }
+
+    /* IMAGE PREVIEW */
+    .img-preview-box { display:none; text-align:center; margin-top:12px; }
+    .img-preview-box img { max-width:100%; max-height:180px; border-radius:var(--r-md); border:2px solid var(--border); object-fit:cover; }
+
+    /* PROGRESS BAR */
+    .upload-progress { display:none; margin-top:12px; }
+    .progress-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:3px; transition:width .3s ease; width:0%; }
+    .progress-text { font-size:.78rem; color:var(--text3); margin-top:6px; text-align:center; }
+
+    /* SPECIAL EVENT TOGGLE */
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+    .toggle-label { font-size:.9rem; font-weight:600; color:var(--text); }
+    .toggle-sub   { font-size:.78rem; color:var(--text3); margin-top:2px; }
+    .toggle-switch { position:relative; width:50px; height:26px; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:var(--border); border-radius:13px; cursor:pointer; transition:background var(--t); }
+    .toggle-slider::before { content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:transform var(--t); }
+    .toggle-switch input:checked + .toggle-slider { background:var(--green); }
+    .toggle-switch input:checked + .toggle-slider::before { transform:translateX(24px); }
+
+    /* LOGIN */
+    #loginSection { max-width:440px; margin:60px auto; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-xl); padding:40px 36px; box-shadow:var(--shadow-lg); text-align:center; }
+    .login-logo { font-size:3rem; margin-bottom:12px; }
+    .login-title { font-size:1.4rem; font-weight:800; color:var(--accent); margin-bottom:6px; }
+    .login-sub { font-size:.85rem; color:var(--text3); margin-bottom:28px; }
+    .login-row { text-align:left; margin-bottom:16px; }
+
+    @media(max-width:580px) {
+      .form-grid-2 { grid-template-columns:1fr; }
+      .form-grid-3 { grid-template-columns:1fr; }
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .tab-btn { padding:8px 10px; font-size:.78rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ────────────────────────────────────────────────── -->
+<div id="loginSection">
+  <div class="login-logo">🔐</div>
+  <div class="login-title">CVR Mess Admin</div>
+  <div class="login-sub">Secure panel for mess committee members only</div>
+  <div class="login-row"><label for="email">Email Address</label><input id="email" type="email" placeholder="admin@example.com"></div>
+  <div class="login-row"><label for="password">Password</label><input id="password" type="password" placeholder="Enter password"></div>
+  <button class="btn btn-primary" onclick="login()">🔓 Sign In</button>
+  <p style="margin-top:18px;font-size:.78rem;color:var(--text3)"><a href="index.html" style="color:var(--accent);font-weight:600">← Back to Mess Menu</a></p>
+</div>
+
+<!-- ── ADMIN PANEL ───────────────────────────────────────────── -->
+<div id="adminPanel" style="display:none">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div class="header-brand">
+        <img src="logo.jpeg" alt="CVR">
+        <div><div class="header-title">Admin Dashboard</div><div class="header-sub">C V Raman Hostel Mess Committee</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <a href="index.html" class="btn btn-sm" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--border);text-decoration:none;width:auto;margin-top:0">👁 View Site</a>
+        <button class="btn btn-red btn-sm" onclick="logout()" style="width:auto;margin-top:0">Sign Out</button>
+      </div>
+    </div>
+
+    <div id="saveStatus">✅ Saved and live!</div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val">7</div><div class="stat-lbl">Days</div></div>
+      <div class="stat-card"><div class="stat-val" id="statNotices">—</div><div class="stat-lbl">Notices</div></div>
+      <div class="stat-card"><div class="stat-val" id="statDishes">—</div><div class="stat-lbl">Dish Photos</div></div>
+      <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">Meals/Day</div></div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active"   onclick="switchTab('menu',this)">🍽️ Menu</button>
+      <button class="tab-btn"          onclick="switchTab('notice',this)">📢 Notices</button>
+      <button class="tab-btn"          onclick="switchTab('gallery',this)">📸 Dish Gallery</button>
+      <button class="tab-btn"          onclick="switchTab('special',this)">⭐ Special Dinner</button>
+      <button class="tab-btn"          onclick="switchTab('timings',this)">🕒 Timings</button>
+    </div>
+
+    <!-- ── TAB: MENU ──────────────────────────────────────────── -->
+    <div class="tab-panel active" id="tab-menu">
+      <div class="card">
+        <div class="card-title">🍽️ Weekly Menu Editor</div>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:16px">Select a day, update meals, and publish instantly to all students.</p>
+        <div class="day-selector" id="daySelector">
+          <button class="day-sel-btn active" data-day="Monday"    onclick="selDay('Monday',this)">Monday</button>
+          <button class="day-sel-btn" data-day="Tuesday"   onclick="selDay('Tuesday',this)">Tuesday</button>
+          <button class="day-sel-btn" data-day="Wednesday" onclick="selDay('Wednesday',this)">Wednesday</button>
+          <button class="day-sel-btn" data-day="Thursday"  onclick="selDay('Thursday',this)">Thursday</button>
+          <button class="day-sel-btn" data-day="Friday"    onclick="selDay('Friday',this)">Friday</button>
+          <button class="day-sel-btn" data-day="Saturday"  onclick="selDay('Saturday',this)">Saturday</button>
+          <button class="day-sel-btn" data-day="Sunday"    onclick="selDay('Sunday',this)">Sunday</button>
+        </div>
+        <div id="menuEditorContent"></div>
+        <button class="btn btn-green" onclick="updateMenu()">💾 Save &amp; Publish Menu</button>
+        <div class="preview-box" id="menuPreviewBox" style="display:none">
+          <h4>📋 Live Preview</h4><div id="menuPreviewContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: NOTICES ───────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-notice">
+      <div class="card">
+        <div class="card-title">✏️ Post New Notice</div>
+        <div class="form-row"><label for="noticeTitle">Notice Title</label><input id="noticeTitle" placeholder="e.g. Special Meal Tomorrow" maxlength="80"></div>
+        <div class="form-row"><label for="noticeContent">Message</label><textarea id="noticeContent" placeholder="Full notice text…" maxlength="500"></textarea><span style="font-size:.72rem;color:var(--text3);float:right;margin-top:4px" id="noticeCC">0/500</span></div>
+        <div class="btn-group">
+          <button class="btn btn-purple" onclick="postCurrentNotice()">📢 Post as Live Notice</button>
+          <button class="btn btn-primary" onclick="addNoticeToHistory()">📋 Save to History</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗂️ Notice History</div>
+        <div class="notice-list" id="noticeList"><p style="color:var(--text3);font-size:.85rem">Loading…</p></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: DISH GALLERY ──────────────────────────────────── -->
+    <div class="tab-panel" id="tab-gallery">
+      <div class="card">
+        <div class="card-title">📸 Upload Dish Photo</div>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:18px">Upload food photos that students can browse in the Dish Gallery.</p>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('dishFile').click()">
+          <div class="uz-icon">📷</div>
+          <div class="uz-text">Click to choose a photo</div>
+          <div class="uz-sub">JPG, PNG, WEBP up to 5 MB</div>
+          <input type="file" id="dishFile" accept="image/*" style="display:none" onchange="onDishFileSelect(event)">
+        </div>
+
+        <!-- Image preview -->
+        <div class="img-preview-box" id="imgPreviewBox">
+          <img id="imgPreview" src="" alt="Preview">
+        </div>
+
+        <!-- Upload progress -->
+        <div class="upload-progress" id="uploadProgress">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-text" id="progressText">Uploading…</div>
+        </div>
+
+        <div class="form-grid-2" style="margin-top:14px">
+          <div class="form-row"><label for="dishName">Dish Name *</label><input id="dishName" placeholder="e.g. Palak Paneer Masala"></div>
+          <div class="form-row">
+            <label for="dishCategory">Category</label>
+            <select id="dishCategory">
+              <option value="">Select category…</option>
+              <option value="Breakfast">🍳 Breakfast</option>
+              <option value="Lunch">🍱 Lunch</option>
+              <option value="Snacks">☕ Snacks</option>
+              <option value="Dinner">🍛 Dinner</option>
+              <option value="Dessert">🍦 Dessert</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-purple" onclick="uploadDish()" id="uploadBtn">📤 Upload Photo</button>
+      </div>
+
+      <!-- Gallery grid -->
+      <div class="card">
+        <div class="card-title">🖼️ Current Gallery <span id="dishCountBadge" style="font-size:.75rem;font-weight:500;color:var(--text3);margin-left:4px"></span></div>
+        <div class="dish-admin-grid" id="adminDishGrid"><p style="color:var(--text3);font-size:.85rem">Loading…</p></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: SPECIAL DINNER ────────────────────────────────── -->
+    <div class="tab-panel" id="tab-special">
+      <div class="card">
+        <div class="card-title">⭐ Special Dinner / Event</div>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:18px">Announce a special dinner or event. It shows as a prominent banner on the main page.</p>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Show Special Event Banner</div>
+            <div class="toggle-sub">Turns on/off the banner for students</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="specialActive">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div id="specialFields" style="margin-top:18px">
+          <div class="form-row"><label for="specialTitle">Event Title *</label><input id="specialTitle" placeholder="e.g. Biryani Night 🍚"></div>
+          <div class="form-row"><label for="specialDetails">Details</label><textarea id="specialDetails" placeholder="e.g. Special Biryani + Raita + Gulab Jamun served tonight!" rows="3"></textarea></div>
+          <div class="form-grid-3">
+            <div class="form-row"><label for="specialDate">Date</label><input id="specialDate" type="date"></div>
+            <div class="form-row"><label for="specialTime">Timing</label><input id="specialTime" placeholder="e.g. 8:00 PM – 10:00 PM"></div>
+            <div class="form-row"><label for="specialMenu">Special Menu</label><input id="specialMenu" placeholder="e.g. Biryani, Raita, Gulab Jamun"></div>
+          </div>
+        </div>
+        <button class="btn btn-orange" onclick="saveSpecialEvent()">💾 Save Special Event</button>
+        <button class="btn btn-red" onclick="clearSpecialEvent()" style="margin-top:8px">🗑 Clear Event (Hide Banner)</button>
+      </div>
+    </div>
+
+    <!-- ── TAB: TIMINGS ───────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-timings">
+      <div class="card">
+        <div class="card-title">🕒 Mess Timing Settings</div>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:20px">Update official timings. Changes reflect on the student page instantly.</p>
+        <div style="margin-bottom:20px">
+          <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:14px">Weekday (Mon–Fri)</div>
+          <div class="form-grid-2">
+            <div class="form-row"><label>Breakfast</label><input id="wd_b" placeholder="7:30 AM – 9:30 AM"></div>
+            <div class="form-row"><label>Lunch</label><input id="wd_l" placeholder="12:30 PM – 2:30 PM"></div>
+            <div class="form-row"><label>Snacks</label><input id="wd_s" placeholder="5:30 PM – 6:30 PM"></div>
+            <div class="form-row"><label>Dinner</label><input id="wd_d" placeholder="8:00 PM – 10:00 PM"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:14px">Weekend (Sat–Sun)</div>
+          <div class="form-grid-2">
+            <div class="form-row"><label>Breakfast</label><input id="we_b" placeholder="8:00 AM – 10:00 AM"></div>
+            <div class="form-row"><label>Lunch</label><input id="we_l" placeholder="1:00 PM – 3:00 PM"></div>
+            <div class="form-row"><label>Snacks</label><input id="we_s" placeholder="5:30 PM – 6:30 PM"></div>
+            <div class="form-row"><label>Dinner</label><input id="we_d" placeholder="8:00 PM – 10:00 PM"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveTimings()">💾 Save Timings</button>
+      </div>
+    </div>
+
+  </div><!-- /admin-wrap -->
+</div><!-- /adminPanel -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, addDoc, getDoc, deleteDoc, collection, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBim0-aBLbxB4Od-V6cCwEpOTwiZUO-nEE",
+  authDomain: "mess-menu-bdba5.firebaseapp.com",
+  projectId: "mess-menu-bdba5",
+  storageBucket: "mess-menu-bdba5.firebasestorage.app",
+  messagingSenderId: "141472583379",
+  appId: "1:141472583379:web:b479d1ddfff8e82c4f4e26",
+  measurementId: "G-82GSXH0SB9"
+};
+const app     = initializeApp(firebaseConfig);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+let currentDay     = "Monday";
+let currentMenuDoc = {};
+let selectedFile   = null;
+let adminDishes    = [];
+
+/* AUTH */
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById("loginSection").style.display = "none";
+    document.getElementById("adminPanel").style.display   = "block";
+    initAdmin();
+  } else {
+    document.getElementById("loginSection").style.display = "block";
+    document.getElementById("adminPanel").style.display   = "none";
+  }
+});
+
+async function initAdmin() {
+  buildMenuEditor("Monday");
+  await loadMenuFromFirebase();
+  listenNotices();
+  listenDishes();
+  loadSpecialEvent();
+  loadTimings();
+  setupDragDrop();
+}
+
+window.login = async () => {
+  const e = document.getElementById("email").value.trim();
+  const p = document.getElementById("password").value;
+  if (!e||!p) { alert("Fill in email and password."); return; }
+  try { await signInWithEmailAndPassword(auth, e, p); }
+  catch(err) { alert("Login failed: " + err.message); }
+};
+window.logout = () => signOut(auth);
+
+/* TABS */
+window.switchTab = (name, btn) => {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+  btn.classList.add("active");
+};
+
+/* MENU EDITOR */
+window.selDay = (day, btn) => {
+  document.querySelectorAll(".day-sel-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentDay = day;
+  buildMenuEditor(day);
+  populateDayFields(day);
+  updatePreview();
+};
+
+function buildMenuEditor(day) {
+  document.getElementById("menuEditorContent").innerHTML = `
+    <h3 style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:14px">Editing: <span style="color:var(--accent)">${day}</span></h3>
+    <div class="form-grid-2">
+      <div class="form-row"><label>🍳 Breakfast</label><input id="f_b" placeholder="e.g. Aloo Paratha, Chutney" oninput="updatePreview()"></div>
+      <div class="form-row"><label>🍱 Lunch</label><input id="f_l" placeholder="e.g. Dal, Rice, Sabzi, Roti" oninput="updatePreview()"></div>
+      <div class="form-row"><label>☕ Snacks</label><input id="f_s" placeholder="e.g. Samosa, Tea" oninput="updatePreview()"></div>
+      <div class="form-row"><label>🍛 Dinner</label><input id="f_d" placeholder="e.g. Paneer, Dal, Rice, Roti" oninput="updatePreview()"></div>
+    </div>
+    <div class="form-row"><label>🍦 Dessert <span style="font-weight:400;text-transform:none">(optional)</span></label><input id="f_ds" placeholder="e.g. Gulab Jamun" oninput="updatePreview()"></div>`;
+}
+
+async function loadMenuFromFirebase() {
+  try {
+    const snap = await getDoc(doc(db,"menu","c v raman"));
+    if (snap.exists()) { currentMenuDoc = snap.data(); populateDayFields("Monday"); updatePreview(); }
+  } catch(e) { console.error(e); }
+}
+
+function populateDayFields(day) {
+  const d = currentMenuDoc;
+  const s = (id,k) => { const el=document.getElementById(id); if(el) el.value = d[`${day}_${k}`]||d[`${day.toLowerCase()}_${k}`]||""; };
+  s("f_b","breakfast"); s("f_l","lunch"); s("f_s","snacks"); s("f_d","dinner"); s("f_ds","dessert");
+}
+
+window.updateMenu = async () => {
+  const b=gv("f_b"),l=gv("f_l"),s=gv("f_s"),d=gv("f_d"),ds=gv("f_ds");
+  if (!b||!l||!d) { alert("Fill Breakfast, Lunch, and Dinner before saving."); return; }
+  const update = {
+    [`${currentDay}_breakfast`]:b, [`${currentDay}_lunch`]:l,
+    [`${currentDay}_snacks`]:s||"", [`${currentDay}_dinner`]:d,
+    [`${currentDay}_dessert`]:ds||"-", updatedAt:serverTimestamp()
+  };
+  Object.assign(currentMenuDoc,update);
+  try { await setDoc(doc(db,"menu","c v raman"),update,{merge:true}); showSaved(); }
+  catch(e) { alert("Error: "+e.message); }
+};
+
+window.updatePreview = () => {
+  const b=gv("f_b"),l=gv("f_l"),s=gv("f_s"),d=gv("f_d"),ds=gv("f_ds");
+  const bx=document.getElementById("menuPreviewBox"),ct=document.getElementById("menuPreviewContent");
+  if(!bx||!ct) return;
+  if(!b&&!l&&!s&&!d) { bx.style.display="none"; return; }
+  bx.style.display="block";
+  ct.innerHTML=`<div class="preview-row"><span class="preview-label">🍳 Breakfast</span><span>${b||"—"}</span></div><div class="preview-row"><span class="preview-label">🍱 Lunch</span><span>${l||"—"}</span></div><div class="preview-row"><span class="preview-label">☕ Snacks</span><span>${s||"—"}</span></div><div class="preview-row"><span class="preview-label">🍛 Dinner</span><span>${d||"—"}</span></div>${ds?`<div class="preview-row"><span class="preview-label">🍦 Dessert</span><span>${ds}</span></div>`:""}`;
+};
+
+/* NOTICES */
+window.postCurrentNotice = async () => {
+  const t=gv("noticeTitle"),c=gv("noticeContent");
+  if(!t||!c) { alert("Fill title and message."); return; }
+  try { await setDoc(doc(db,"settings","notice"),{title:t,content:c,updatedAt:serverTimestamp()}); showSaved("✅ Notice live on main page!"); }
+  catch(e) { alert(e.message); }
+};
+window.addNoticeToHistory = async () => {
+  const t=gv("noticeTitle"),c=gv("noticeContent");
+  if(!t||!c) { alert("Fill title and message."); return; }
+  try {
+    await addDoc(collection(db,"notices"),{title:t,content:c,createdAt:serverTimestamp()});
+    document.getElementById("noticeTitle").value=""; document.getElementById("noticeContent").value=""; document.getElementById("noticeCC").textContent="0/500";
+    showSaved("✅ Notice added to history!");
+  } catch(e) { alert(e.message); }
+};
+function listenNotices() {
+  const q=query(collection(db,"notices"),orderBy("createdAt","desc"));
+  onSnapshot(q, snap => {
+    const list=document.getElementById("noticeList"), st=document.getElementById("statNotices");
+    if(!list) return;
+    if(st) st.textContent=snap.size;
+    if(snap.empty) { list.innerHTML="<p style='color:var(--text3);font-size:.85rem'>No notices yet.</p>"; return; }
+    list.innerHTML=snap.docs.map(d => {
+      const data=d.data();
+      let date="";
+      if(data.createdAt?.toDate) date=data.createdAt.toDate().toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+      return `<div class="notice-item"><div class="nc"><div class="ntitle">${san(data.title)}</div><div class="nbody">${san(data.content)}</div>${date?`<div class="nmeta">📅 ${date}</div>`:""}</div><button class="del-btn" onclick="delNotice('${d.id}')">🗑 Delete</button></div>`;
+    }).join("");
+  });
+}
+window.delNotice = async id => {
+  if(!confirm("Delete this notice?")) return;
+  try { await deleteDoc(doc(db,"notices",id)); } catch(e) { alert(e.message); }
+};
+
+/* DISH GALLERY */
+window.onDishFileSelect = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { alert("File too large. Max 5 MB."); return; }
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const box = document.getElementById("imgPreviewBox");
+    const img = document.getElementById("imgPreview");
+    img.src = e.target.result;
+    box.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+};
+
+function setupDragDrop() {
+  const zone = document.getElementById("uploadZone");
+  if (!zone) return;
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault(); zone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      document.getElementById("dishFile").files = e.dataTransfer.files;
+      onDishFileSelect({ target: { files: [file] } });
+    }
+  });
+}
+
+window.uploadDish = async function() {
+  const name = gv("dishName");
+  const cat  = gv("dishCategory");
+  if (!name) { alert("Enter the dish name."); return; }
+  if (!selectedFile) { alert("Choose a photo first."); return; }
+
+  const btn = document.getElementById("uploadBtn");
+  btn.disabled = true; btn.textContent = "⏳ Uploading…";
+
+  const progressWrap = document.getElementById("uploadProgress");
+  const fill  = document.getElementById("progressFill");
+  const ptxt  = document.getElementById("progressText");
+  progressWrap.style.display = "block";
+
+  try {
+    const filename = `dishes/${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9.-]/g,"_")}`;
+    const storageRef = ref(storage, filename);
+    const task = uploadBytesResumable(storageRef, selectedFile);
+
+    task.on("state_changed",
+      snap => {
+        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+        fill.style.width = pct + "%";
+        ptxt.textContent = `Uploading… ${pct}%`;
+      },
+      err => {
+        console.error(err);
+        alert("Upload failed: " + err.message);
+        btn.disabled = false; btn.textContent = "📤 Upload Photo";
+        progressWrap.style.display = "none";
+      },
+      async () => {
+        const url = await getDownloadURL(task.snapshot.ref);
+        await addDoc(collection(db,"dishes"), {
+          name, category: cat||"", url,
+          storagePath: filename,
+          uploadedAt: serverTimestamp()
+        });
+        showSaved("✅ Photo uploaded successfully!");
+        document.getElementById("dishName").value = "";
+        document.getElementById("dishCategory").value = "";
+        document.getElementById("dishFile").value = "";
+        document.getElementById("imgPreviewBox").style.display = "none";
+        selectedFile = null;
+        btn.disabled = false; btn.textContent = "📤 Upload Photo";
+        progressWrap.style.display = "none";
+        fill.style.width = "0%";
+      }
+    );
+  } catch(e) {
+    alert("Error: " + e.message);
+    btn.disabled = false; btn.textContent = "📤 Upload Photo";
+    progressWrap.style.display = "none";
+  }
+};
+
+function listenDishes() {
+  const q = query(collection(db,"dishes"), orderBy("uploadedAt","desc"));
+  onSnapshot(q, snap => {
+    adminDishes = snap.docs.map(d => ({id:d.id,...d.data()}));
+    const grid  = document.getElementById("adminDishGrid");
+    const badge = document.getElementById("dishCountBadge");
+    const stat  = document.getElementById("statDishes");
+    if(stat) stat.textContent = adminDishes.length;
+    if(badge) badge.textContent = `(${adminDishes.length} photos)`;
+    if(!grid) return;
+    if(adminDishes.length === 0) {
+      grid.innerHTML = "<p style='color:var(--text3);font-size:.85rem'>No photos yet. Upload the first one!</p>";
+      return;
+    }
+    grid.innerHTML = adminDishes.map(d => `
+      <div class="dish-admin-card">
+        <img src="${d.url}" alt="${d.name}" loading="lazy">
+        <button class="dish-del-overlay" onclick="delDish('${d.id}','${d.storagePath||""}')" title="Delete">🗑</button>
+        <div class="dname">${san(d.name)}</div>
+        ${d.category ? `<div class="dcat">${d.category}</div>` : ""}
+      </div>`).join("");
+  });
+}
+
+window.delDish = async (id, storagePath) => {
+  if (!confirm("Delete this photo permanently?")) return;
+  try {
+    await deleteDoc(doc(db,"dishes",id));
+    if (storagePath) {
+      try { await deleteObject(ref(storage, storagePath)); } catch(_) {}
+    }
+    showSaved("🗑 Photo deleted.");
+  } catch(e) { alert(e.message); }
+};
+
+/* SPECIAL EVENT */
+async function loadSpecialEvent() {
+  try {
+    const snap = await getDoc(doc(db,"settings","specialEvent"));
+    if (!snap.exists()) return;
+    const d = snap.data();
+    document.getElementById("specialActive").checked  = !!d.active;
+    document.getElementById("specialTitle").value     = d.title   || "";
+    document.getElementById("specialDetails").value   = d.details || "";
+    document.getElementById("specialDate").value      = d.date    || "";
+    document.getElementById("specialTime").value      = d.time    || "";
+    document.getElementById("specialMenu").value      = d.menu    || "";
+  } catch(e) { console.error(e); }
+}
+
+window.saveSpecialEvent = async () => {
+  const active  = document.getElementById("specialActive").checked;
+  const title   = gv("specialTitle");
+  const details = gv("specialDetails");
+  const date    = gv("specialDate");
+  const time    = gv("specialTime");
+  const menu    = gv("specialMenu");
+  if (active && !title) { alert("Enter an event title."); return; }
+  try {
+    await setDoc(doc(db,"settings","specialEvent"),{active,title,details,date,time,menu,updatedAt:serverTimestamp()});
+    showSaved(active ? "⭐ Special event is now live!" : "✅ Banner hidden from students.");
+  } catch(e) { alert(e.message); }
+};
+
+window.clearSpecialEvent = async () => {
+  if (!confirm("Hide the special event banner from students?")) return;
+  try {
+    await setDoc(doc(db,"settings","specialEvent"),{active:false,updatedAt:serverTimestamp()},{merge:true});
+    document.getElementById("specialActive").checked = false;
+    showSaved("🗑 Special event cleared.");
+  } catch(e) { alert(e.message); }
+};
+
+/* TIMINGS */
+async function loadTimings() {
+  try {
+    const snap = await getDoc(doc(db,"settings","timings"));
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const s = (id,v) => { const el=document.getElementById(id); if(el&&v) el.value=v; };
+    s("wd_b",d.weekday_breakfast); s("wd_l",d.weekday_lunch); s("wd_s",d.weekday_snacks); s("wd_d",d.weekday_dinner);
+    s("we_b",d.weekend_breakfast); s("we_l",d.weekend_lunch); s("we_s",d.weekend_snacks); s("we_d",d.weekend_dinner);
+  } catch(e) { console.error(e); }
+}
+window.saveTimings = async () => {
+  try {
+    await setDoc(doc(db,"settings","timings"),{
+      weekday_breakfast:gv("wd_b"),weekday_lunch:gv("wd_l"),weekday_snacks:gv("wd_s"),weekday_dinner:gv("wd_d"),
+      weekend_breakfast:gv("we_b"),weekend_lunch:gv("we_l"),weekend_snacks:gv("we_s"),weekend_dinner:gv("we_d"),
+      updatedAt:serverTimestamp()
+    });
+    showSaved("✅ Timings updated live!");
+  } catch(e) { alert(e.message); }
+};
+
+/* HELPERS */
+function gv(id) { return document.getElementById(id)?.value.trim()||""; }
+function san(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function showSaved(msg="✅ Saved and live!") {
+  const el=document.getElementById("saveStatus"); if(!el) return;
+  el.textContent=msg; el.style.display="flex";
+  clearTimeout(el._t); el._t=setTimeout(()=>el.style.display="none",3500);
+}
+
+/* Notice char counter */
+document.getElementById("noticeContent")?.addEventListener("input",function(){
+  const el=document.getElementById("noticeCC"); if(el) el.textContent=`${this.value.length}/500`;
+});
+</script>
+</body>
+</html>
