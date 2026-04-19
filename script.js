@@ -30,6 +30,10 @@ let cachedSpecial    = null;
 let latestNotice     = { title:"Welcome!", content:"WELCOME TO CVR MESS — NEW MENU UPDATED", createdAt:null };
 let isFirstMenu      = true;
 let isFirstNotice    = true;
+let isFirstSpecial   = true;
+let previousMenuStr  = "";
+let previousNoticeStr = "";
+let previousSpecialStr = "";
 let chatOpen           = false;
 let speedDialOpen      = false;
 let currentSelectedDay = "Monday"; // updated on load + tab click
@@ -121,8 +125,14 @@ function listenToMenu() {
         dessert:   d[`${day}_dessert`]   || d[`${day.toLowerCase()}_dessert`]   || null
       };
     });
-    if (!isFirstMenu) showToast("🍽️ Menu updated live!", "success");
+    
+    const currentMenuStr = JSON.stringify(cachedMenuData);
+    if (!isFirstMenu && previousMenuStr && previousMenuStr !== currentMenuStr) {
+      showToast("🍽️ Menu updated live!", "success");
+    }
+    previousMenuStr = currentMenuStr;
     isFirstMenu = false;
+    
     updateDisplay();
   }, err => {
     console.error("Menu error:", err);
@@ -138,7 +148,12 @@ function listenToNotice() {
       latestNotice = { title: d.title || "Notice", content: d.content || d.message || "No notice.", createdAt: d.updatedAt || d.createdAt || null };
     }
     renderNotice();
-    if (!isFirstNotice) showToast("📢 New notice posted!", "warning");
+    
+    const currentNoticeStr = latestNotice.title + latestNotice.content;
+    if (!isFirstNotice && previousNoticeStr && previousNoticeStr !== currentNoticeStr) {
+      showToast("📢 New notice posted!", "warning");
+    }
+    previousNoticeStr = currentNoticeStr;
     isFirstNotice = false;
   }, () => {
     const q = query(collection(db, "notices"), orderBy("createdAt","desc"), limit(1));
@@ -146,9 +161,14 @@ function listenToNotice() {
       if (!snap.empty) {
         const d = snap.docs[0].data();
         latestNotice = { title: d.title || "Notice", content: d.content || "Check notice board.", createdAt: d.createdAt || null };
-        if (!isFirstNotice) showToast("📢 New notice!", "warning");
-        isFirstNotice = false;
         renderNotice();
+        
+        const currentNoticeStr = latestNotice.title + latestNotice.content;
+        if (!isFirstNotice && previousNoticeStr && previousNoticeStr !== currentNoticeStr) {
+          showToast("📢 New notice!", "warning");
+        }
+        previousNoticeStr = currentNoticeStr;
+        isFirstNotice = false;
       }
     });
   });
@@ -158,6 +178,24 @@ function renderNotice() {
   const el     = document.getElementById("committeeNotice");
   const stamp  = document.getElementById("noticeDateStamp");
   const ticker = document.getElementById("tickerText");
+  const wrap   = document.getElementById("noticeBoardWrap");
+
+  let isExpired = false;
+  if (latestNotice.createdAt) {
+    const ts = latestNotice.createdAt.toDate ? latestNotice.createdAt.toDate() : new Date(latestNotice.createdAt);
+    if (new Date() - ts > 48 * 60 * 60 * 1000) {
+      isExpired = true; // Auto-hide notices older than 48 hours
+    }
+  }
+
+  if (isExpired) {
+    if (wrap) wrap.style.display = "none";
+    if (ticker) ticker.innerHTML = "<strong>No new notices at this time.</strong>";
+    return;
+  } else {
+    if (wrap) wrap.style.display = "block";
+  }
+
   if (el) el.textContent = latestNotice.content;
   if (ticker) ticker.innerHTML = `<strong>${latestNotice.title}:</strong> ${latestNotice.content.substring(0,90)}${latestNotice.content.length > 90 ? "…" : ""}`;
   if (stamp && latestNotice.createdAt) {
@@ -226,6 +264,17 @@ function listenToSpecialEvent() {
 
     const d = snap.data();
     if (!d.active || !d.title) { banner.classList.remove("active"); return; }
+    
+    // Auto-hide if the scheduled date is strictly in the past
+    if (d.date) {
+      const today = new Date();
+      // YYYY-MM-DD local format
+      const todayStr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,'0') + "-" + String(today.getDate()).padStart(2,'0');
+      if (todayStr > d.date) {
+        banner.classList.remove("active"); 
+        return; 
+      }
+    }
 
     cachedSpecial = d;
     document.getElementById("seTitle").textContent   = d.title   || "Special Event";
@@ -233,7 +282,12 @@ function listenToSpecialEvent() {
     document.getElementById("seTime").textContent    = d.time    ? `🕒 ${d.time}` : "🕒 Check timings";
     banner.classList.add("active");
 
-    if (!isFirstMenu) showToast("⭐ Special dinner tonight!", "info");
+    const currentSpecialStr = d.title + (d.details || "");
+    if (!isFirstSpecial && previousSpecialStr && previousSpecialStr !== currentSpecialStr) {
+      showToast("⭐ Special dinner tonight!", "info");
+    }
+    previousSpecialStr = currentSpecialStr;
+    isFirstSpecial = false;
   });
 }
 
