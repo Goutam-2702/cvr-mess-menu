@@ -268,9 +268,10 @@ function listenToSpecialEvent() {
     // Auto-hide if the scheduled date is strictly in the past
     if (d.date) {
       const today = new Date();
-      // YYYY-MM-DD local format
-      const todayStr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,'0') + "-" + String(today.getDate()).padStart(2,'0');
-      if (todayStr > d.date) {
+      today.setHours(0,0,0,0);
+      const eventDate = new Date(d.date);
+      eventDate.setHours(0,0,0,0);
+      if (today.getTime() > eventDate.getTime()) {
         banner.classList.remove("active"); 
         return; 
       }
