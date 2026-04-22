@@ -38,10 +38,55 @@ let chatOpen           = false;
 let speedDialOpen      = false;
 let currentSelectedDay = "Monday"; // updated on load + tab click
 
+// Timings are now loaded live from Firebase (set by admin)
+// These are fallback defaults only
 const TIMINGS = {
   weekday: { breakfast:"7:30 AM – 9:30 AM", lunch:"12:30 PM – 2:30 PM", snacks:"5:30 PM – 6:30 PM", dinner:"8:00 PM – 10:00 PM" },
   weekend: { breakfast:"8:00 AM – 10:00 AM", lunch:"1:00 PM – 3:00 PM",  snacks:"5:30 PM – 6:30 PM", dinner:"8:00 PM – 10:00 PM" }
 };
+let liveTimings = null; // Will be populated from Firebase
+
+// Parse "7:30 AM" style time strings into { h, m } objects
+function parseTimeStr(str) {
+  if (!str) return null;
+  const m = str.trim().match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const ampm = m[3].toUpperCase();
+  if (ampm === "PM" && h !== 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  return { h, m: min };
+}
+
+// Parse "7:30 AM – 9:30 AM" into { start, end } in minutes since midnight
+function parseTimeRange(rangeStr) {
+  if (!rangeStr) return null;
+  const parts = rangeStr.split(/[–-]/);
+  if (parts.length < 2) return null;
+  const start = parseTimeStr(parts[0]);
+  const end   = parseTimeStr(parts[1]);
+  if (!start || !end) return null;
+  return { start: start.h * 60 + start.m, end: end.h * 60 + end.m };
+}
+
+function getActiveTimings(day) {
+  const isWE = (day === "Saturday" || day === "Sunday");
+  if (liveTimings) {
+    return isWE ? {
+      breakfast: liveTimings.weekend_breakfast || TIMINGS.weekend.breakfast,
+      lunch:     liveTimings.weekend_lunch     || TIMINGS.weekend.lunch,
+      snacks:    liveTimings.weekend_snacks    || TIMINGS.weekend.snacks,
+      dinner:    liveTimings.weekend_dinner    || TIMINGS.weekend.dinner,
+    } : {
+      breakfast: liveTimings.weekday_breakfast || TIMINGS.weekday.breakfast,
+      lunch:     liveTimings.weekday_lunch     || TIMINGS.weekday.lunch,
+      snacks:    liveTimings.weekday_snacks    || TIMINGS.weekday.snacks,
+      dinner:    liveTimings.weekday_dinner    || TIMINGS.weekday.dinner,
+    };
+  }
+  return isWE ? TIMINGS.weekend : TIMINGS.weekday;
+}
 
 /* ─── DOM READY ───────────────────────────────────────────── */
 window.addEventListener("DOMContentLoaded", () => {
@@ -64,6 +109,7 @@ window.addEventListener("DOMContentLoaded", () => {
   listenToNotice();
   listenToGallery();
   listenToSpecialEvent();
+  listenToTimings();
 
   if (sel) sel.addEventListener("change", () => {
     currentSelectedDay = sel.value;
@@ -206,16 +252,37 @@ function renderNotice() {
   }
 }
 
+/* ─── FIREBASE: TIMINGS ───────────────────────────────────── */
+function listenToTimings() {
+  onSnapshot(doc(db, "settings", "timings"), (snap) => {
+    if (snap.exists()) {
+      liveTimings = snap.data();
+      // Re-render timings display for the current day
+      updateDisplay();
+    }
+  }, err => {
+    console.warn("Timings listen error (using defaults):", err);
+  });
+}
+
 /* ─── FIREBASE: GALLERY / DISHES ─────────────────────────── */
 function listenToGallery() {
+  // Try ordered query first; fall back to unordered if index missing
   const q = query(collection(db, "dishes"), orderBy("uploadedAt","desc"));
   onSnapshot(q, (snap) => {
     cachedDishes = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderGallery();
   }, err => {
-    console.error("Gallery error:", err);
-    const grid = document.getElementById("dishGrid");
-    if (grid) grid.innerHTML = "<div class='gallery-empty'>📸 No photos yet — check back soon!</div>";
+    console.warn("Gallery ordered query failed, trying unordered:", err);
+    // Fallback: listen without ordering
+    onSnapshot(collection(db, "dishes"), (snap) => {
+      cachedDishes = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      renderGallery();
+    }, err2 => {
+      console.error("Gallery error:", err2);
+      const grid = document.getElementById("dishGrid");
+      if (grid) grid.innerHTML = "<div class='gallery-empty'>📸 No photos yet — check back soon!</div>";
+    });
   });
 }
 
@@ -231,12 +298,14 @@ function renderGallery() {
     return;
   }
 
-  grid.innerHTML = cachedDishes.map((dish, i) => `
-    <div class="dish-card" onclick="openLightbox(${i})" role="button" tabindex="0" aria-label="View ${dish.name}">
-      <img src="${dish.url}" alt="${dish.name}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22><rect width=%22200%22 height=%22150%22 fill=%22%23f0f4ff%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2230%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>🍽️</text></svg>'">
-      <div class="dish-card-name">${dish.name}</div>
+  grid.innerHTML = cachedDishes.map((dish, i) => {
+    const safeName = (dish.name || "").replace(/"/g, "&quot;");
+    return `<div class="dish-card" onclick="openLightbox(${i})" role="button" tabindex="0" aria-label="View ${safeName}">
+      <img src="${dish.url}" alt="${safeName}" loading="lazy" onerror="this.style.background='#f0f4ff';this.style.minHeight='120px';this.alt='Image not available'">
+      <div class="dish-card-name">${dish.name || "Dish"}</div>
       ${dish.category ? `<div class="dish-card-tag">${dish.category}</div>` : ""}
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 window.openLightbox = function(index) {
@@ -302,13 +371,15 @@ window.updateDisplay = function() {
   const day    = currentSelectedDay;
   const menu   = cachedMenuData[day];
   const isWE   = (day === "Saturday" || day === "Sunday");
-  const timing = isWE ? TIMINGS.weekend : TIMINGS.weekday;
+  const timing = getActiveTimings(day);  // Uses live Firebase timings if available
 
   const tt = document.getElementById("timingTitle");
   if (tt) tt.textContent = isWE ? `🕒 Weekend Timings (${day})` : "🕒 Weekday Timings (Mon – Fri)";
-  ["bt","lt","st","dt"].forEach((id, i) => {
+  const timingIds = ["bt", "lt", "st", "dt"];
+  const timingKeys = ["breakfast", "lunch", "snacks", "dinner"];
+  timingIds.forEach((id, i) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = Object.values(timing)[i];
+    if (el) el.textContent = timing[timingKeys[i]] || "";
   });
   setActiveTab(day);
 
@@ -345,11 +416,23 @@ window.updateDisplay = function() {
 };
 
 function getCurrentMeal() {
-  const h = new Date().getHours();
-  if (h >= 7  && h < 10) return "breakfast";
-  if (h >= 12 && h < 15) return "lunch";
-  if (h >= 17 && h < 19) return "snacks";
-  if (h >= 20 && h < 22) return "dinner";
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const today = DAYS[now.getDay()];
+  const timing = getActiveTimings(today);
+
+  // Check each meal using parsed time ranges from live timings
+  const meals = [
+    { key: "breakfast", range: timing.breakfast },
+    { key: "lunch",     range: timing.lunch },
+    { key: "snacks",    range: timing.snacks },
+    { key: "dinner",    range: timing.dinner },
+  ];
+
+  for (const meal of meals) {
+    const r = parseTimeRange(meal.range);
+    if (r && nowMin >= r.start && nowMin < r.end) return meal.key;
+  }
   return null;
 }
 
@@ -527,7 +610,7 @@ function generateBotResponse(text, raw) {
   // Timings
   if (/time|timing|when|open|close|hour/i.test(text)) {
     const isWE = (day === "Saturday" || day === "Sunday");
-    const t    = isWE ? TIMINGS.weekend : TIMINGS.weekday;
+    const t    = getActiveTimings(day);
     return `🕒 <b>Mess Timings (${isWE?"Weekend":"Weekday"}):</b><br>🍳 ${t.breakfast}<br>🍱 ${t.lunch}<br>☕ ${t.snacks}<br>🍛 ${t.dinner}`;
   }
 
