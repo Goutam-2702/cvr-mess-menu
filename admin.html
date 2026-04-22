@@ -240,26 +240,42 @@
     <!-- ── TAB: DISH GALLERY ──────────────────────────────────── -->
     <div class="tab-panel" id="tab-gallery">
       <div class="card">
-        <div class="card-title">📸 Upload Dish Photo</div>
-        <p style="font-size:.85rem;color:var(--text3);margin-bottom:18px">Upload food photos that students can browse in the Dish Gallery.</p>
+        <div class="card-title">📸 Add Dish Photo</div>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:18px">Add food photos via upload or by pasting an external image link.</p>
 
-        <!-- Upload zone -->
-        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('dishFile').click()">
-          <div class="uz-icon">📷</div>
-          <div class="uz-text">Click to choose a photo</div>
-          <div class="uz-sub">JPG, PNG, WEBP up to 5 MB</div>
-          <input type="file" id="dishFile" accept="image/*" style="display:none" onchange="onDishFileSelect(event)">
+        <!-- Toggle Mode -->
+        <div style="display:flex;gap:8px;margin-bottom:18px">
+          <button class="btn btn-sm" id="modeUploadBtn" onclick="setGalleryMode('upload')" style="background:var(--accent);color:white">📁 Upload File</button>
+          <button class="btn btn-sm" id="modeLinkBtn" onclick="setGalleryMode('link')" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border)">🔗 Paste URL</button>
         </div>
 
-        <!-- Image preview -->
-        <div class="img-preview-box" id="imgPreviewBox">
-          <img id="imgPreview" src="" alt="Preview">
+        <!-- Mode: Upload -->
+        <div id="galleryUploadZone">
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('dishFile').click()">
+            <div class="uz-icon">📷</div>
+            <div class="uz-text">Click to choose a photo</div>
+            <div class="uz-sub">JPG, PNG, WEBP up to 5 MB</div>
+            <input type="file" id="dishFile" accept="image/*" style="display:none" onchange="onDishFileSelect(event)">
+          </div>
+          <div class="img-preview-box" id="imgPreviewBox">
+            <img id="imgPreview" src="" alt="Preview">
+          </div>
+          <div class="upload-progress" id="uploadProgress">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">Uploading…</div>
+          </div>
         </div>
 
-        <!-- Upload progress -->
-        <div class="upload-progress" id="uploadProgress">
-          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-          <div class="progress-text" id="progressText">Uploading…</div>
+        <!-- Mode: Link -->
+        <div id="galleryLinkZone" style="display:none">
+          <div class="form-row">
+            <label for="dishUrl">Image Link (URL)</label>
+            <input id="dishUrl" placeholder="https://example.com/photo.jpg" oninput="onUrlInput(this.value)">
+          </div>
+          <div class="img-preview-box" id="urlPreviewBox" style="margin-bottom:14px">
+            <img id="urlPreview" src="" alt="URL Preview" style="max-height:150px;border-radius:10px">
+          </div>
+          <p style="font-size:.72rem;color:var(--text3);margin-top:-8px mb-10">Tip: Upload to <a href="https://postimages.org/" target="_blank" style="color:var(--accent)">PostImages</a> or <a href="https://imgur.com/upload" target="_blank" style="color:var(--accent)">Imgur</a> and paste the link here.</p>
         </div>
 
         <div class="form-grid-2" style="margin-top:14px">
@@ -276,7 +292,7 @@
             </select>
           </div>
         </div>
-        <button class="btn btn-purple" onclick="uploadDish()" id="uploadBtn">📤 Upload Photo</button>
+        <button class="btn btn-purple" onclick="saveDish()" id="uploadBtn">💾 Save to Gallery</button>
       </div>
 
       <!-- Gallery grid -->
@@ -372,6 +388,7 @@ let currentDay     = "Monday";
 let currentMenuDoc = {};
 let selectedFile   = null;
 let adminDishes    = [];
+let galleryMode    = "upload"; // or 'link'
 
 /* AUTH */
 onAuthStateChanged(auth, user => {
@@ -506,6 +523,29 @@ window.delNotice = async id => {
 };
 
 /* DISH GALLERY */
+window.setGalleryMode = (mode) => {
+  galleryMode = mode;
+  document.getElementById("galleryUploadZone").style.display = (mode === 'upload' ? 'block' : 'none');
+  document.getElementById("galleryLinkZone").style.display   = (mode === 'link' ? 'block' : 'none');
+  
+  const uBtn = document.getElementById("modeUploadBtn");
+  const lBtn = document.getElementById("modeLinkBtn");
+  if(mode === 'upload') {
+    uBtn.style.background = 'var(--accent)'; uBtn.style.color = 'white';
+    lBtn.style.background = 'var(--surface2)'; lBtn.style.color = 'var(--text2)';
+  } else {
+    lBtn.style.background = 'var(--accent)'; lBtn.style.color = 'white';
+    uBtn.style.background = 'var(--surface2)'; uBtn.style.color = 'var(--text2)';
+  }
+};
+
+window.onUrlInput = (val) => {
+  const box = document.getElementById("urlPreviewBox");
+  const img = document.getElementById("urlPreview");
+  if(!val) { box.style.display = "none"; return; }
+  img.src = val; box.style.display = "block";
+};
+
 window.onDishFileSelect = function(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -521,27 +561,44 @@ window.onDishFileSelect = function(event) {
   reader.readAsDataURL(file);
 };
 
-function setupDragDrop() {
-  const zone = document.getElementById("uploadZone");
-  if (!zone) return;
-  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
-  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
-  zone.addEventListener("drop", e => {
-    e.preventDefault(); zone.classList.remove("drag-over");
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
-      document.getElementById("dishFile").files = e.dataTransfer.files;
-      onDishFileSelect({ target: { files: [file] } });
-    }
-  });
-}
-
-window.uploadDish = async function() {
+window.saveDish = async function() {
   const name = gv("dishName");
   const cat  = gv("dishCategory");
-  if (!name) { alert("Enter the dish name."); return; }
-  if (!selectedFile) { alert("Choose a photo first."); return; }
+  const urlIn = gv("dishUrl");
 
+  if (!name) { alert("Enter the dish name."); return; }
+
+  if(galleryMode === 'link') {
+    if(!urlIn) { alert("Please paste an image URL."); return; }
+    await addDishToFirestore(name, cat, urlIn, null);
+    document.getElementById("dishUrl").value = "";
+    document.getElementById("urlPreviewBox").style.display = "none";
+  } else {
+    if (!selectedFile) { alert("Choose a photo first."); return; }
+    uploadDishFile(name, cat);
+  }
+};
+
+async function addDishToFirestore(name, category, url, storagePath) {
+  try {
+    await addDoc(collection(db,"dishes"), {
+      name, category, url,
+      storagePath: storagePath || "",
+      uploadedAt: serverTimestamp()
+    });
+    showSaved("✅ Photo added to gallery!");
+    document.getElementById("dishName").value = "";
+    document.getElementById("dishCategory").value = "";
+    document.getElementById("dishFile").value = "";
+    document.getElementById("imgPreviewBox").style.display = "none";
+    selectedFile = null;
+  } catch(e) {
+    console.error("Firestore Error:", e);
+    alert("Fail to save info: " + e.message);
+  }
+}
+
+async function uploadDishFile(name, cat) {
   const btn = document.getElementById("uploadBtn");
   btn.disabled = true; btn.textContent = "⏳ Uploading…";
 
@@ -563,40 +620,24 @@ window.uploadDish = async function() {
       },
       err => {
         console.error("Storage Upload Error:", err);
-        alert(`Upload failed!\nError: ${err.message}\nCode: ${err.code}\n\nCheck if your Firebase Storage rules allow writes.`);
-        btn.disabled = false; btn.textContent = "📤 Upload Photo";
+        alert(`Upload failed!\nError: ${err.message}\nCode: ${err.code}\n\nTIP: If you are on the Spark plan, try using the 'Link URL' mode instead!`);
+        btn.disabled = false; btn.textContent = "💾 Save to Gallery";
         progressWrap.style.display = "none";
       },
       async () => {
-        try {
-          const url = await getDownloadURL(task.snapshot.ref);
-          await addDoc(collection(db,"dishes"), {
-            name, category: cat||"", url,
-            storagePath: filename,
-            uploadedAt: serverTimestamp()
-          });
-          showSaved("✅ Photo uploaded successfully!");
-          document.getElementById("dishName").value = "";
-          document.getElementById("dishCategory").value = "";
-          document.getElementById("dishFile").value = "";
-          document.getElementById("imgPreviewBox").style.display = "none";
-          selectedFile = null;
-          btn.disabled = false; btn.textContent = "📤 Upload Photo";
-          progressWrap.style.display = "none";
-          fill.style.width = "0%";
-        } catch(e) {
-          console.error("Post-upload Error:", e);
-          alert("Photo uploaded but database update failed: " + e.message);
-          btn.disabled = false; btn.textContent = "📤 Upload Photo";
-        }
+        const url = await getDownloadURL(task.snapshot.ref);
+        await addDishToFirestore(name, cat, url, filename);
+        btn.disabled = false; btn.textContent = "💾 Save to Gallery";
+        progressWrap.style.display = "none";
+        fill.style.width = "0%";
       }
     );
   } catch(e) {
     alert("Error: " + e.message);
-    btn.disabled = false; btn.textContent = "📤 Upload Photo";
+    btn.disabled = false; btn.textContent = "💾 Save to Gallery";
     progressWrap.style.display = "none";
   }
-};
+}
 
 function listenDishes() {
   const q = query(collection(db,"dishes"), orderBy("uploadedAt","desc"));
