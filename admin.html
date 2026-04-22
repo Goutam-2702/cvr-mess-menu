@@ -562,27 +562,33 @@ window.uploadDish = async function() {
         ptxt.textContent = `Uploading… ${pct}%`;
       },
       err => {
-        console.error(err);
-        alert("Upload failed: " + err.message);
+        console.error("Storage Upload Error:", err);
+        alert(`Upload failed!\nError: ${err.message}\nCode: ${err.code}\n\nCheck if your Firebase Storage rules allow writes.`);
         btn.disabled = false; btn.textContent = "📤 Upload Photo";
         progressWrap.style.display = "none";
       },
       async () => {
-        const url = await getDownloadURL(task.snapshot.ref);
-        await addDoc(collection(db,"dishes"), {
-          name, category: cat||"", url,
-          storagePath: filename,
-          uploadedAt: serverTimestamp()
-        });
-        showSaved("✅ Photo uploaded successfully!");
-        document.getElementById("dishName").value = "";
-        document.getElementById("dishCategory").value = "";
-        document.getElementById("dishFile").value = "";
-        document.getElementById("imgPreviewBox").style.display = "none";
-        selectedFile = null;
-        btn.disabled = false; btn.textContent = "📤 Upload Photo";
-        progressWrap.style.display = "none";
-        fill.style.width = "0%";
+        try {
+          const url = await getDownloadURL(task.snapshot.ref);
+          await addDoc(collection(db,"dishes"), {
+            name, category: cat||"", url,
+            storagePath: filename,
+            uploadedAt: serverTimestamp()
+          });
+          showSaved("✅ Photo uploaded successfully!");
+          document.getElementById("dishName").value = "";
+          document.getElementById("dishCategory").value = "";
+          document.getElementById("dishFile").value = "";
+          document.getElementById("imgPreviewBox").style.display = "none";
+          selectedFile = null;
+          btn.disabled = false; btn.textContent = "📤 Upload Photo";
+          progressWrap.style.display = "none";
+          fill.style.width = "0%";
+        } catch(e) {
+          console.error("Post-upload Error:", e);
+          alert("Photo uploaded but database update failed: " + e.message);
+          btn.disabled = false; btn.textContent = "📤 Upload Photo";
+        }
       }
     );
   } catch(e) {
@@ -595,25 +601,38 @@ window.uploadDish = async function() {
 function listenDishes() {
   const q = query(collection(db,"dishes"), orderBy("uploadedAt","desc"));
   onSnapshot(q, snap => {
-    adminDishes = snap.docs.map(d => ({id:d.id,...d.data()}));
-    const grid  = document.getElementById("adminDishGrid");
-    const badge = document.getElementById("dishCountBadge");
-    const stat  = document.getElementById("statDishes");
-    if(stat) stat.textContent = adminDishes.length;
-    if(badge) badge.textContent = `(${adminDishes.length} photos)`;
-    if(!grid) return;
-    if(adminDishes.length === 0) {
-      grid.innerHTML = "<p style='color:var(--text3);font-size:.85rem'>No photos yet. Upload the first one!</p>";
-      return;
-    }
-    grid.innerHTML = adminDishes.map(d => `
-      <div class="dish-admin-card">
-        <img src="${d.url}" alt="${d.name}" loading="lazy">
-        <button class="dish-del-overlay" onclick="delDish('${d.id}','${d.storagePath||""}')" title="Delete">🗑</button>
-        <div class="dname">${san(d.name)}</div>
-        ${d.category ? `<div class="dcat">${d.category}</div>` : ""}
-      </div>`).join("");
+    renderAdminDishes(snap);
+  }, err => {
+    console.warn("Dishes ordered query failed (likely missing index). Trying unordered...", err);
+    onSnapshot(collection(db,"dishes"), snap => {
+      renderAdminDishes(snap);
+    }, err2 => {
+      console.error("Dishes fetch failed:", err2);
+      const grid = document.getElementById("adminDishGrid");
+      if(grid) grid.innerHTML = "<p style='color:var(--red)'>Error loading gallery. Check console.</p>";
+    });
   });
+}
+
+function renderAdminDishes(snap) {
+  adminDishes = snap.docs.map(d => ({id:d.id,...d.data()}));
+  const grid  = document.getElementById("adminDishGrid");
+  const badge = document.getElementById("dishCountBadge");
+  const stat  = document.getElementById("statDishes");
+  if(stat) stat.textContent = adminDishes.length;
+  if(badge) badge.textContent = `(${adminDishes.length} photos)`;
+  if(!grid) return;
+  if(adminDishes.length === 0) {
+    grid.innerHTML = "<p style='color:var(--text3);font-size:.85rem'>No photos yet. Upload the first one!</p>";
+    return;
+  }
+  grid.innerHTML = adminDishes.map(d => `
+    <div class="dish-admin-card">
+      <img src="${d.url}" alt="${san(d.name)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2275%22><rect width=%22100%22 height=%2275%22 fill=%22%23eee%22/><text x=%2250%25%22 y=%2250%25%22 dy=%22.3em%22 text-anchor=%22middle%22>🖼️</text></svg>'">
+      <button class="dish-del-overlay" onclick="delDish('${d.id}','${d.storagePath||""}')" title="Delete">🗑</button>
+      <div class="dname">${san(d.name)}</div>
+      ${d.category ? `<div class="dcat">${san(d.category)}</div>` : ""}
+    </div>`).join("");
 }
 
 window.delDish = async (id, storagePath) => {
