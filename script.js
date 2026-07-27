@@ -37,6 +37,10 @@ let previousSpecialStr = "";
 let chatOpen           = false;
 let speedDialOpen      = false;
 let currentSelectedDay = "Monday"; // updated on load + tab click
+let currentHostel      = "c v raman";
+let menuUnsubscribe    = null;
+let timingsUnsubscribe = null;
+let galleryUnsubscribe = null;
 
 // Timings are now loaded live from Firebase (set by admin)
 // These are fallback defaults only
@@ -104,6 +108,35 @@ window.addEventListener("DOMContentLoaded", () => {
   const sel = document.getElementById("daySelect");
   if (sel) sel.value = today;
 
+  // Handle Hostel Selection
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlHostel = urlParams.get('hostel');
+  const storedHostel = localStorage.getItem("selectedHostel");
+  
+  if (urlHostel === "c v raman" || urlHostel === "aryabhatt") {
+    currentHostel = urlHostel;
+    localStorage.setItem("selectedHostel", currentHostel);
+  } else if (storedHostel === "c v raman" || storedHostel === "aryabhatt") {
+    currentHostel = storedHostel;
+  }
+  
+  const hostelSel = document.getElementById("hostelSelect");
+  if (hostelSel) {
+    hostelSel.value = currentHostel;
+    updateHostelUI();
+    hostelSel.addEventListener("change", () => {
+      currentHostel = hostelSel.value;
+      localStorage.setItem("selectedHostel", currentHostel);
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('hostel', currentHostel);
+      window.history.pushState({}, '', newUrl);
+      updateHostelUI();
+      listenToMenu();
+      listenToTimings();
+      listenToGallery();
+    });
+  }
+
   buildDayTabs(today);
   listenToMenu();
   listenToNotice();
@@ -156,7 +189,12 @@ function syncTabsToSelect() {
 /* ─── FIREBASE: MENU ──────────────────────────────────────── */
 function listenToMenu() {
   const out = document.getElementById("menuOutput");
-  onSnapshot(doc(db, "menu", "c v raman"), (snap) => {
+  if (menuUnsubscribe) menuUnsubscribe();
+  
+  // Show loading indicator when switching hostels
+  if (out) out.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><span>Loading menu...</span></div>';
+
+  menuUnsubscribe = onSnapshot(doc(db, "menu", currentHostel), (snap) => {
     if (!snap.exists()) {
       if (out) out.innerHTML = "<div class='menu-card'><p style='text-align:center;color:var(--text3)'>❌ Menu not found</p></div>";
       return;
@@ -184,6 +222,10 @@ function listenToMenu() {
     console.error("Menu error:", err);
     if (out) out.innerHTML = "<div class='menu-card'><p style='text-align:center;color:var(--text3)'>⚠️ Could not load menu</p></div>";
   });
+}
+
+function updateHostelUI() {
+  document.title = currentHostel === "aryabhatt" ? "Aryabhatt Mess Menu" : "CVR Mess Menu";
 }
 
 /* ─── FIREBASE: NOTICE ────────────────────────────────────── */
@@ -254,10 +296,14 @@ function renderNotice() {
 
 /* ─── FIREBASE: TIMINGS ───────────────────────────────────── */
 function listenToTimings() {
-  onSnapshot(doc(db, "settings", "timings"), (snap) => {
+  if (timingsUnsubscribe) timingsUnsubscribe();
+  timingsUnsubscribe = onSnapshot(doc(db, "settings", "timings_" + currentHostel), (snap) => {
     if (snap.exists()) {
       liveTimings = snap.data();
       // Re-render timings display for the current day
+      updateDisplay();
+    } else {
+      liveTimings = null;
       updateDisplay();
     }
   }, err => {
@@ -267,15 +313,17 @@ function listenToTimings() {
 
 /* ─── FIREBASE: GALLERY / DISHES ─────────────────────────── */
 function listenToGallery() {
+  if (galleryUnsubscribe) galleryUnsubscribe();
+  
   // Try ordered query first; fall back to unordered if index missing
-  const q = query(collection(db, "dishes"), orderBy("uploadedAt","desc"));
-  onSnapshot(q, (snap) => {
+  const q = query(collection(db, "dishes_" + currentHostel), orderBy("uploadedAt","desc"));
+  galleryUnsubscribe = onSnapshot(q, (snap) => {
     cachedDishes = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderGallery();
   }, err => {
     console.warn("Gallery ordered query failed, trying unordered:", err);
     // Fallback: listen without ordering
-    onSnapshot(collection(db, "dishes"), (snap) => {
+    galleryUnsubscribe = onSnapshot(collection(db, "dishes_" + currentHostel), (snap) => {
       cachedDishes = snap.docs.map(d => ({ id:d.id, ...d.data() }));
       renderGallery();
     }, err2 => {

@@ -172,8 +172,14 @@
   <div class="admin-wrap">
     <div class="admin-header">
       <div class="header-brand">
-        <img src="logo.jpeg" alt="CVR">
-        <div><div class="header-title">Admin Dashboard</div><div class="header-sub">C V Raman Hostel Mess Committee</div></div>
+        <img src="logo.png" alt="CVR">
+        <div>
+          <div class="header-title">Admin Dashboard</div>
+          <select id="adminHostelSelect" onchange="window.onAdminHostelChange()" style="margin-top: 6px; padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text); font-family: inherit; font-size: 0.85rem; font-weight: 600; outline: none; cursor: pointer;">
+            <option value="c v raman">C V Raman Hostel</option>
+            <option value="aryabhatt">Aryabhatt Hostel</option>
+          </select>
+        </div>
       </div>
       <div style="display:flex;gap:8px">
         <a href="index.html" class="btn btn-sm" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--border);text-decoration:none;width:auto;margin-top:0">👁 View Site</a>
@@ -389,6 +395,8 @@ let currentMenuDoc = {};
 let selectedFile   = null;
 let adminDishes    = [];
 let galleryMode    = "upload"; // or 'link'
+let currentAdminHostel = localStorage.getItem("adminSelectedHostel") || "c v raman";
+let galleryUnsubscribe = null;
 
 /* AUTH */
 onAuthStateChanged(auth, user => {
@@ -403,6 +411,9 @@ onAuthStateChanged(auth, user => {
 });
 
 async function initAdmin() {
+  const sel = document.getElementById("adminHostelSelect");
+  if (sel) sel.value = currentAdminHostel;
+  
   buildMenuEditor("Monday");
   await loadMenuFromFirebase();
   listenNotices();
@@ -412,10 +423,20 @@ async function initAdmin() {
   setupDragDrop();
 }
 
+window.onAdminHostelChange = async () => {
+  currentAdminHostel = document.getElementById("adminHostelSelect").value;
+  localStorage.setItem("adminSelectedHostel", currentAdminHostel);
+  await loadMenuFromFirebase();
+  await loadTimings();
+  listenDishes();
+  showSaved("✅ Switched to " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman"));
+};
+
 window.login = async () => {
   const e = document.getElementById("email").value.trim();
   const p = document.getElementById("password").value;
   if (!e||!p) { alert("Fill in email and password."); return; }
+  
   try { await signInWithEmailAndPassword(auth, e, p); }
   catch(err) { alert("Login failed: " + err.message); }
 };
@@ -453,8 +474,9 @@ function buildMenuEditor(day) {
 
 async function loadMenuFromFirebase() {
   try {
-    const snap = await getDoc(doc(db,"menu","c v raman"));
-    if (snap.exists()) { currentMenuDoc = snap.data(); populateDayFields("Monday"); updatePreview(); }
+    const snap = await getDoc(doc(db,"menu",currentAdminHostel));
+    if (snap.exists()) { currentMenuDoc = snap.data(); populateDayFields(currentDay); updatePreview(); }
+    else { currentMenuDoc = {}; populateDayFields(currentDay); updatePreview(); }
   } catch(e) { console.error(e); }
 }
 
@@ -473,7 +495,7 @@ window.updateMenu = async () => {
     [`${currentDay}_dessert`]:ds||"-", updatedAt:serverTimestamp()
   };
   Object.assign(currentMenuDoc,update);
-  try { await setDoc(doc(db,"menu","c v raman"),update,{merge:true}); showSaved(); }
+  try { await setDoc(doc(db,"menu",currentAdminHostel),update,{merge:true}); showSaved(); }
   catch(e) { alert("Error: "+e.message); }
 };
 
@@ -581,7 +603,7 @@ window.saveDish = async function() {
 
 async function addDishToFirestore(name, category, url, storagePath) {
   try {
-    await addDoc(collection(db,"dishes"), {
+    await addDoc(collection(db,"dishes_" + currentAdminHostel), {
       name, category, url,
       storagePath: storagePath || "",
       uploadedAt: serverTimestamp()
@@ -640,12 +662,13 @@ async function uploadDishFile(name, cat) {
 }
 
 function listenDishes() {
-  const q = query(collection(db,"dishes"), orderBy("uploadedAt","desc"));
-  onSnapshot(q, snap => {
+  if (galleryUnsubscribe) galleryUnsubscribe();
+  const q = query(collection(db,"dishes_" + currentAdminHostel), orderBy("uploadedAt","desc"));
+  galleryUnsubscribe = onSnapshot(q, snap => {
     renderAdminDishes(snap);
   }, err => {
     console.warn("Dishes ordered query failed (likely missing index). Trying unordered...", err);
-    onSnapshot(collection(db,"dishes"), snap => {
+    galleryUnsubscribe = onSnapshot(collection(db,"dishes_" + currentAdminHostel), snap => {
       renderAdminDishes(snap);
     }, err2 => {
       console.error("Dishes fetch failed:", err2);
@@ -679,7 +702,7 @@ function renderAdminDishes(snap) {
 window.delDish = async (id, storagePath) => {
   if (!confirm("Delete this photo permanently?")) return;
   try {
-    await deleteDoc(doc(db,"dishes",id));
+    await deleteDoc(doc(db,"dishes_" + currentAdminHostel,id));
     if (storagePath) {
       try { await deleteObject(ref(storage, storagePath)); } catch(_) {}
     }
@@ -728,22 +751,28 @@ window.clearSpecialEvent = async () => {
 /* TIMINGS */
 async function loadTimings() {
   try {
-    const snap = await getDoc(doc(db,"settings","timings"));
-    if (!snap.exists()) return;
+    const snap = await getDoc(doc(db,"settings","timings_" + currentAdminHostel));
+    if (!snap.exists()) {
+      // Clear fields if no data
+      const s = (id) => { const el=document.getElementById(id); if(el) el.value=""; };
+      s("wd_b"); s("wd_l"); s("wd_s"); s("wd_d");
+      s("we_b"); s("we_l"); s("we_s"); s("we_d");
+      return;
+    }
     const d = snap.data();
-    const s = (id,v) => { const el=document.getElementById(id); if(el&&v) el.value=v; };
+    const s = (id,v) => { const el=document.getElementById(id); if(el) el.value=v||""; };
     s("wd_b",d.weekday_breakfast); s("wd_l",d.weekday_lunch); s("wd_s",d.weekday_snacks); s("wd_d",d.weekday_dinner);
     s("we_b",d.weekend_breakfast); s("we_l",d.weekend_lunch); s("we_s",d.weekend_snacks); s("we_d",d.weekend_dinner);
   } catch(e) { console.error(e); }
 }
 window.saveTimings = async () => {
   try {
-    await setDoc(doc(db,"settings","timings"),{
+    await setDoc(doc(db,"settings","timings_" + currentAdminHostel),{
       weekday_breakfast:gv("wd_b"),weekday_lunch:gv("wd_l"),weekday_snacks:gv("wd_s"),weekday_dinner:gv("wd_d"),
       weekend_breakfast:gv("we_b"),weekend_lunch:gv("we_l"),weekend_snacks:gv("we_s"),weekend_dinner:gv("we_d"),
       updatedAt:serverTimestamp()
     });
-    showSaved("✅ Timings updated live!");
+    showSaved("✅ Timings updated live for " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman") + "!");
   } catch(e) { alert(e.message); }
 };
 

@@ -1,0 +1,118 @@
+{
+  "c_v_raman": {
+    "Monday": {
+      "breakfast": "Aloo Paratha, Red & Green Chutney, Pickle",
+      "lunch": "Rajma, Plain Rice, Fryums, Roti, Curd",
+      "snacks": "Samosa, Chutney",
+      "dinner": "Butter Paneer Masala, Butter Chicken, Dal Fry, Plain Rice, Roti, Papad",
+      "dessert": "Custard / Sewai Kheer"
+    },
+    "Tuesday": {
+      "breakfast": "Palak Poori, Aloo Curry",
+      "lunch": "Mix Veg, Dal Tadka, Jeera Rice, Papad, Roti",
+      "snacks": "Bhel Puri",
+      "dinner": "Aloo Soya Dal, Mix Rice, Papad, Roti, Raita",
+      "dessert": "Gulab Jamun"
+    },
+    "Wednesday": {
+      "breakfast": "Poha, Jalebi, Namkeen, Sev",
+      "lunch": "Kadhi, Mix Dal, Plain Rice, Aloo Bhujia, Fryums, Roti, Curd",
+      "snacks": "Pasta",
+      "dinner": "Chilli Paneer, Chilli Chicken, Jeera Rice, Roti",
+      "dessert": "-"
+    },
+    "Thursday": {
+      "breakfast": "Plain Poori, Aloo Sabzi",
+      "lunch": "Dum Aloo, Dal Tadka, Fried Rice, Papad, Roti",
+      "snacks": "Spring Roll, Lassi",
+      "dinner": "Mix Veg, Dal Makhani, Plain Rice, Papad, Roti",
+      "dessert": "Gajar Halwa / Rasgulla"
+    },
+    "Friday": {
+      "breakfast": "Uttapam, Vada, Sambar, Chutney",
+      "lunch": "Chole, Methi Matar Malai, Plain Rice, Roti, Butter Milk",
+      "snacks": "Bread Pakoda",
+      "dinner": "Kadhai Paneer, Kadhai Chicken, Plain Rice, Roti",
+      "dessert": "Kheer"
+    },
+    "Saturday": {
+      "breakfast": "Sandwich, Green Chutney, Ketchup",
+      "lunch": "Noodles, Manchurian, Fried Rice, Dal",
+      "snacks": "Golgappe",
+      "dinner": "Malai Kofta, Egg Curry, Plain Rice, Roti",
+      "dessert": "Boondi"
+    },
+    "Sunday": {
+      "breakfast": "Masala Dosa, Sambar, Chutney",
+      "lunch": "Chole Bhature, Dal, Fry Jeera Rice, Boondi Raita",
+      "snacks": "Maggi",
+      "dinner": "Veg Biryani, Raita",
+      "dessert": "Shahi Tukda"
+    },
+    "Everyday": {
+      "breakfast": "Bread, Butter, Jam, Milk, Tea",
+      "lunch": "Salad, Pickle",
+      "snacks": "Tea / Coffee, Toast",
+      "dinner": "Salad, Pickle",
+      "dessert": "-"
+    }
+  },
+  "aryabhatt": {
+    "Monday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Tuesday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Wednesday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Thursday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Friday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Saturday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Sunday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "Placeholder Dessert"
+    },
+    "Everyday": {
+      "breakfast": "Placeholder Breakfast",
+      "lunch": "Placeholder Lunch",
+      "snacks": "Placeholder Snacks",
+      "dinner": "Placeholder Dinner",
+      "dessert": "-"
+    }
+  }
+}
