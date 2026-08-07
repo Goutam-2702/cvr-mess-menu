@@ -202,6 +202,7 @@
       <button class="tab-btn"          onclick="switchTab('gallery',this)">📸 Dish Gallery</button>
       <button class="tab-btn"          onclick="switchTab('special',this)">⭐ Special Dinner</button>
       <button class="tab-btn"          onclick="switchTab('timings',this)">🕒 Timings</button>
+      <button class="tab-btn"          onclick="switchTab('crowd',this)">📊 Crowd</button>
     </div>
 
     <!-- ── TAB: MENU ──────────────────────────────────────────── -->
@@ -365,6 +366,27 @@
         <button class="btn btn-primary" onclick="saveTimings()">💾 Save Timings</button>
       </div>
     </div>
+    
+    <!-- ── TAB: CROWD ─────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-crowd">
+      <div class="card">
+        <div class="card-title">📊 Crowd Control</div>
+        <div style="margin-bottom:16px;">
+          <label>Current Status</label>
+          <div id="adminCrowdStatus" style="padding:10px; background:var(--surface2); border-radius:var(--r-sm); margin-top:6px; color:var(--text2)">Loading...</div>
+        </div>
+        <div class="form-row">
+          <label>Update Level</label>
+          <select id="crowdLevelSelect">
+            <option value="Low">🟢 Low</option>
+            <option value="Medium">🟡 Medium</option>
+            <option value="High">🔴 High</option>
+            <option value="Full">🟣 Full</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="adminSetCrowd()">💾 Update Crowd Level</button>
+      </div>
+    </div>
 
   </div><!-- /admin-wrap -->
 </div><!-- /adminPanel -->
@@ -421,6 +443,7 @@ async function initAdmin() {
   loadSpecialEvent();
   loadTimings();
   setupDragDrop();
+  listenToCrowdAdmin();
 }
 
 window.onAdminHostelChange = async () => {
@@ -429,6 +452,7 @@ window.onAdminHostelChange = async () => {
   await loadMenuFromFirebase();
   await loadTimings();
   listenDishes();
+  listenToCrowdAdmin();
   showSaved("✅ Switched to " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman"));
 };
 
