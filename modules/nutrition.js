@@ -3,7 +3,7 @@
    ================================================================= */
 
 // USDA FoodData Central API
-const USDA_API_KEY = ''; // User's USDA API Key (set via localStorage for safety)
+const USDA_API_KEY = localStorage.getItem('usda_key') || ''; // User's USDA API Key (set via localStorage for safety)
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
 
 // Local nutrition database for common Indian mess foods (per serving)
