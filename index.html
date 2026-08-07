@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="logo.jpeg">
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="app-styles.css?v=2" />
 
   <!-- OneSignal -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -30,6 +31,8 @@
 
   <!-- TOAST -->
   <div id="toast-container"></div>
+
+
 
   <!-- NOTIFICATION PERMISSION MODAL -->
   <div class="notif-overlay" id="notifOverlay">
@@ -73,6 +76,9 @@
     <option value="c v raman">C V Raman Hostel</option>
     <option value="aryabhatt">Aryabhatt Hostel</option>
   </select>
+
+  <!-- SEARCH BAR -->
+  <div id="search-bar-root"></div>
 
   <!-- LIVE TICKER -->
   <div class="live-ticker">
@@ -152,6 +158,9 @@
   </div>
 
   <!-- MENU OUTPUT -->
+  <!-- ADMIN TOOLBAR (for crowd control) -->
+  <div id="admin-toolbar-root"></div>
+
   <div id="menuOutput">
     <div class="loading-spinner">
       <div class="spinner"></div>
@@ -183,6 +192,12 @@
   </div>
 
   <!-- REBATE -->
+  <!-- CROWD SECTION -->
+  <div id="crowd-section-root"></div>
+
+  <!-- TRACKER WIDGET -->
+  <div id="tracker-widget-root"></div>
+
   <a href="http://10.15.7.7/messIITP/web/index.php" target="_blank" rel="noopener noreferrer" class="rebate-btn">
     📄 Apply for Mess Rebate
   </a>
@@ -249,5 +264,13 @@
   </footer>
 
   <script type="module" src="script.js"></script>
+  <script type="module" src="app.js?v=8"></script>
+  <!-- NEW FEATURE ROOTS -->
+  <div id="profile-modal-root" style="position: relative; z-index: 99999;"></div>
+  <div id="settings-panel-root" style="position: relative; z-index: 99999;"></div>
+  <div id="nutrition-modal-root" style="position: relative; z-index: 99999;"></div>
+  <div id="dashboard-root" style="position: relative; z-index: 99999;"></div>
+
 </body>
 </html>
+

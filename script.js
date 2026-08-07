@@ -22,6 +22,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
+/* ─── SHARED STATE (for new modules) ────────────────────── */
+window.messApp = window.messApp || {};
+
 /* ─── STATE ───────────────────────────────────────────────── */
 const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 let cachedMenuData   = {};
@@ -124,7 +127,10 @@ window.addEventListener("DOMContentLoaded", () => {
   if (hostelSel) {
     hostelSel.value = currentHostel;
     updateHostelUI();
-    hostelSel.addEventListener("change", () => {
+    hostelSel.addEventListener("change", (e) => {
+      const evt = new CustomEvent('hostelChanging', { detail: { newHostel: hostelSel.value, oldHostel: currentHostel }, cancelable: true });
+      const allowed = document.dispatchEvent(evt);
+      if (!allowed) { hostelSel.value = currentHostel; return; }
       currentHostel = hostelSel.value;
       localStorage.setItem("selectedHostel", currentHostel);
       const newUrl = new URL(window.location);
@@ -134,6 +140,7 @@ window.addEventListener("DOMContentLoaded", () => {
       listenToMenu();
       listenToTimings();
       listenToGallery();
+      document.dispatchEvent(new CustomEvent('hostelChanged', { detail: { hostel: currentHostel } }));
     });
   }
 
@@ -461,6 +468,17 @@ window.updateDisplay = function() {
     : "";
 
   out.innerHTML = `<div class="menu-card"><h2><span class="day-emoji">${emoji}</span>${day}'s Menu</h2>${rows}${dessert}</div>`;
+
+  // Publish state for new modules
+  window.messApp.cachedMenuData = cachedMenuData;
+  window.messApp.currentSelectedDay = currentSelectedDay;
+  window.messApp.currentHostel = currentHostel;
+  window.messApp.DAYS = DAYS;
+  window.messApp.getCurrentMeal = getCurrentMeal;
+  window.messApp.getActiveTimings = getActiveTimings;
+  window.messApp.cachedDishes = cachedDishes;
+  window.messApp.db = db;
+  document.dispatchEvent(new CustomEvent('menuRendered', { detail: { day, menu, hostel: currentHostel } }));
 };
 
 function getCurrentMeal() {
