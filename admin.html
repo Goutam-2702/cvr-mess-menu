@@ -376,15 +376,23 @@
           <div id="adminCrowdStatus" style="padding:10px; background:var(--surface2); border-radius:var(--r-sm); margin-top:6px; color:var(--text2)">Loading...</div>
         </div>
         <div class="form-row">
+          <label>Select Meal</label>
+          <select id="crowdMealSelect">
+            <option value="breakfast">🍳 Breakfast</option>
+            <option value="lunch">🍱 Lunch</option>
+            <option value="dinner">🍛 Dinner</option>
+          </select>
+        </div>
+        <div class="form-row">
           <label>Update Level</label>
           <select id="crowdLevelSelect">
-            <option value="Low">🟢 Low</option>
-            <option value="Medium">🟡 Medium</option>
-            <option value="High">🔴 High</option>
-            <option value="Full">🟣 Full</option>
+            <option value="low">🟢 Low</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="high">🔴 High</option>
           </select>
         </div>
         <button class="btn btn-primary" onclick="adminSetCrowd()">💾 Update Crowd Level</button>
+        <button class="btn btn-sm" onclick="adminClearCrowd()" style="margin-top:10px; background:var(--surface2); color:var(--text2); border:1px solid var(--border);">Reset All to Estimated</button>
       </div>
     </div>
 
@@ -443,7 +451,7 @@ async function initAdmin() {
   loadSpecialEvent();
   loadTimings();
   setupDragDrop();
-  listenToCrowdAdmin();
+  if (window.listenToCrowdAdmin) window.listenToCrowdAdmin();
 }
 
 window.onAdminHostelChange = async () => {
@@ -452,7 +460,7 @@ window.onAdminHostelChange = async () => {
   await loadMenuFromFirebase();
   await loadTimings();
   listenDishes();
-  listenToCrowdAdmin();
+  if (window.listenToCrowdAdmin) window.listenToCrowdAdmin();
   showSaved("✅ Switched to " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman"));
 };
 
@@ -813,6 +821,55 @@ function showSaved(msg="✅ Saved and live!") {
 document.getElementById("noticeContent")?.addEventListener("input",function(){
   const el=document.getElementById("noticeCC"); if(el) el.textContent=`${this.value.length}/500`;
 });
+
+/* CROWD CONTROL */
+let crowdUnsubscribe = null;
+window.listenToCrowdAdmin = function() {
+  if (crowdUnsubscribe) crowdUnsubscribe();
+  crowdUnsubscribe = onSnapshot(doc(db, "crowd", currentAdminHostel), (snap) => {
+    const st = document.getElementById("adminCrowdStatus");
+    if (snap.exists()) {
+      const d = snap.data();
+      const b = d.breakfast || 'Estimated';
+      const l = d.lunch || 'Estimated';
+      const din = d.dinner || 'Estimated';
+      st.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Breakfast:</span> <b style="text-transform:capitalize">${b}</b></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Lunch:</span> <b style="text-transform:capitalize">${l}</b></div>
+        <div style="display:flex; justify-content:space-between;"><span>Dinner:</span> <b style="text-transform:capitalize">${din}</b></div>
+        <div style="font-size:0.75rem; color:var(--text3); margin-top:8px; border-top:1px solid var(--border); padding-top:6px;">Last updated: ${d.updatedAt ? new Date(d.updatedAt.toMillis ? d.updatedAt.toMillis() : d.updatedAt).toLocaleString() : 'N/A'} (by ${d.updatedBy || 'N/A'})</div>
+      `;
+    } else {
+      st.textContent = "No data currently set (Using automatic estimates).";
+    }
+  });
+}
+
+window.adminSetCrowd = async function() {
+  const meal = document.getElementById('crowdMealSelect').value;
+  const level = document.getElementById('crowdLevelSelect').value;
+  try {
+    await setDoc(doc(db, "crowd", currentAdminHostel), {
+      [meal]: level,
+      updatedBy: 'admin',
+      lastUpdatedMeal: meal,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    showSaved(`Live crowd status for ${meal} updated to ${level}`);
+  } catch(err) {
+    alert("Error: " + err.message);
+  }
+}
+
+window.adminClearCrowd = async function() {
+  try {
+    await deleteDoc(doc(db, "crowd", currentAdminHostel));
+    showSaved("Crowd status reset to automatic estimates");
+  } catch(err) {
+    alert("Error: " + err.message);
+  }
+}
+
 </script>
 </body>
 </html>
