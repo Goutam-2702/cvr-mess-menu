@@ -37,6 +37,7 @@ export function injectRatingButtons() {
     else if (classes.includes('lunch')) mealType = 'lunch';
     else if (classes.includes('snacks')) mealType = 'snacks';
     else if (classes.includes('dinner')) mealType = 'dinner';
+    else if (classes.includes('dessert')) mealType = 'dessert';
     else return;
 
     // Don't add if already has rating button
@@ -69,7 +70,7 @@ function showRatingModal(mealType) {
   if (!root) return;
 
   const mealLabel = mealType.charAt(0).toUpperCase() + mealType.slice(1);
-  const mealIcon = { breakfast: '🍳', lunch: '🍱', snacks: '☕', dinner: '🍛' }[mealType] || '🍽️';
+  const mealIcon = { breakfast: '🍳', lunch: '🍱', snacks: '☕', dinner: '🍛', dessert: '🍦' }[mealType] || '🍽️';
 
   root.innerHTML = `
   <div class="nm-overlay nm-show" id="rtOverlay">
@@ -208,7 +209,7 @@ function updateMealRatingDisplay(mealType, average, count) {
     if (average > 0) {
       const display = document.createElement('div');
       display.className = 'rt-avg-display';
-      display.innerHTML = `<span class="rt-avg-stars">${getStarDisplay(average)}</span><span class="rt-avg-count">(${count})</span>`;
+      display.innerHTML = `<span class="rt-avg-stars">${getStarDisplay(average)}</span> <span class="rt-avg-count">(${average.toFixed(1)}/${count})</span>`;
       const rateBtn = row.querySelector('.rt-inline');
       if (rateBtn) rateBtn.before(display);
       else row.appendChild(display);
@@ -223,7 +224,7 @@ function getStarDisplay(avg) {
     else if (i - 0.5 <= avg) stars += '★';
     else stars += '☆';
   }
-  return `${stars} ${avg.toFixed(1)}`;
+  return stars;
 }
 
 export function cleanup() {
