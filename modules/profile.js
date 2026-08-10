@@ -17,11 +17,20 @@ export function clearProfile() {
   localStorage.removeItem(PROFILE_KEY);
 }
 
-function detectHostel(rollNumber) {
-  const rn = (rollNumber || '').trim();
+/* ─── HOSTEL SUGGESTION (hint only, NOT authoritative) ── */
+function suggestHostel(rollNumber) {
+  const rn = (rollNumber || '').trim().toLowerCase();
+  // BTech 25xx → Aryabhatta (Mess-5), BTech 26xx → C.V. Raman (Mess-4)
+  // But MTech, PhD, MSc with '26' can go to either mess,
+  // so this is only a suggestion for common BTech cases.
   if (rn.startsWith('25')) return 'aryabhatt';
   if (rn.startsWith('26')) return 'c v raman';
   return null;
+}
+
+// Keep legacy name as alias for any code that might reference it
+function detectHostel(rollNumber) {
+  return suggestHostel(rollNumber);
 }
 
 /* ─── WELCOME MODAL ────────────────────────────────────── */
@@ -46,9 +55,21 @@ export function showWelcomeModal() {
               <input class="pm-input" id="pmName" placeholder="e.g. Rahul Sharma" autocomplete="off">
             </div>
             <div class="pm-form-row">
-              <label class="pm-label">Roll Number *</label>
-              <input class="pm-input" id="pmRoll" placeholder="e.g. 2501cs01" autocomplete="off" maxlength="20">
+              <label class="pm-label">Roll Number</label>
+              <input class="pm-input" id="pmRoll" placeholder="e.g. 2501cs01 (optional)" autocomplete="off" maxlength="20">
               <div class="pm-hint" id="pmHostelHint"></div>
+            </div>
+            <div class="pm-form-row">
+              <label class="pm-label">Your Mess *</label>
+              <select class="pm-input" id="pmHostel" style="cursor: pointer;">
+                <option value="">— Select your mess —</option>
+                <option value="c v raman">Mess-4 — C.V. Raman</option>
+                <option value="aryabhatt">Mess-5 — Aryabhatta</option>
+              </select>
+              <div class="pm-hint" id="pmMessHint" style="font-size: 0.72rem; color: var(--text3); margin-top: 4px; line-height: 1.4;">
+                Mess-4 (CVR): BTech 26, MSc 26 Girls, MTech 26 Girls<br>
+                Mess-5 (Aryabhatta): BTech 25, PhD 26 Boys, MSc 26 Boys
+              </div>
             </div>
             <p style="font-size: 0.75rem; color: var(--text3); margin-bottom: 15px;">You can set your fitness profile (height, weight, etc.) later in the ⚙️ Settings panel on the dashboard.</p>
             <button class="pm-btn pm-btn-primary" id="pmFinish">Start Using App ✨</button>
@@ -57,19 +78,24 @@ export function showWelcomeModal() {
       </div>
     </div>`;
 
-    // Roll number → hostel hint
     const rollInput = document.getElementById('pmRoll');
+    const hostelSelect = document.getElementById('pmHostel');
     const hint = document.getElementById('pmHostelHint');
+
+    // Roll number → suggest hostel (but user can override)
     rollInput.addEventListener('input', () => {
-      const hostel = detectHostel(rollInput.value);
-      if (hostel === 'aryabhatt') {
-        hint.textContent = '✅ Aryabhatt Hostel detected';
+      const suggested = suggestHostel(rollInput.value);
+      if (suggested && !hostelSelect.value) {
+        // Auto-select only if user hasn't manually chosen yet
+        hostelSelect.value = suggested;
+        const label = suggested === 'aryabhatt' ? 'Aryabhatta (Mess-5)' : 'C.V. Raman (Mess-4)';
+        hint.textContent = `💡 Auto-selected ${label} — change if needed`;
         hint.className = 'pm-hint pm-hint-success';
-      } else if (hostel === 'c v raman') {
-        hint.textContent = '✅ C V Raman Hostel detected';
-        hint.className = 'pm-hint pm-hint-success';
+      } else if (suggested) {
+        hint.textContent = '';
+        hint.className = 'pm-hint';
       } else if (rollInput.value.length >= 2) {
-        hint.textContent = '⚠️ Roll number must start with 25 or 26';
+        hint.textContent = 'Please select your mess manually below';
         hint.className = 'pm-hint pm-hint-warn';
       } else {
         hint.textContent = '';
@@ -80,13 +106,22 @@ export function showWelcomeModal() {
     document.getElementById('pmFinish').addEventListener('click', () => {
       const name = document.getElementById('pmName').value.trim();
       const roll = document.getElementById('pmRoll').value.trim();
+      const hostel = hostelSelect.value;
+
       if (!name) { shakeInput('pmName'); return; }
-      if (!roll || !detectHostel(roll)) { shakeInput('pmRoll'); return; }
+      if (!hostel) {
+        // Highlight the mess selector
+        hostelSelect.style.borderColor = '#ef4444';
+        hostelSelect.classList.add('pm-shake');
+        setTimeout(() => { hostelSelect.classList.remove('pm-shake'); hostelSelect.style.borderColor = ''; }, 600);
+        hostelSelect.focus();
+        return;
+      }
 
       const profile = {
         name,
         rollNumber: roll,
-        hostel: detectHostel(roll),
+        hostel,
         age: 20,
         gender: 'male',
         height: 170,
@@ -154,22 +189,24 @@ export function setupHostelRestriction(profile) {
     hostelSel.dispatchEvent(new Event('change'));
   }
 
-  // Intercept hostel switch attempts
+  // Intercept hostel switch attempts (reads latest profile each time)
   document.addEventListener('hostelChanging', (e) => {
+    const currentProfile = getProfile();
+    if (!currentProfile?.hostel) return;
     const newHostel = e.detail.newHostel;
-    if (newHostel !== profile.hostel) {
+    if (newHostel !== currentProfile.hostel) {
       e.preventDefault();
-      showAccessDenied(profile.hostel);
+      showAccessDenied(currentProfile.hostel);
     }
   });
 }
 
 function showAccessDenied(userHostel) {
-  const hostelName = userHostel === 'aryabhatt' ? 'Aryabhatt' : 'C V Raman';
-  const otherName = userHostel === 'aryabhatt' ? 'C V Raman' : 'Aryabhatt';
+  const hostelName = userHostel === 'aryabhatt' ? 'Aryabhatta' : 'C.V. Raman';
+  const otherName = userHostel === 'aryabhatt' ? 'C.V. Raman' : 'Aryabhatta';
   
   if (window.showToast) {
-    window.showToast(`🚫 You belong to ${hostelName} Hostel. Access to ${otherName} menu is restricted.`, 'warning');
+    window.showToast(`🚫 You belong to ${hostelName} mess. To switch, update your mess in ⚙️ Settings.`, 'warning');
   }
 }
 
@@ -208,8 +245,12 @@ export function showSettings() {
             <div class="sp-disabled-hint">Roll number cannot be changed</div>
           </div>
           <div class="sp-form-row">
-            <label class="sp-label">Hostel</label>
-            <div class="sp-hostel-badge">${profile.hostel === 'aryabhatt' ? '🏠 Aryabhatt Hostel' : '🏠 C V Raman Hostel'}</div>
+            <label class="sp-label">Your Mess</label>
+            <select class="sp-input" id="spHostel">
+              <option value="c v raman" ${profile.hostel === 'c v raman' ? 'selected' : ''}>Mess-4 — C.V. Raman</option>
+              <option value="aryabhatt" ${profile.hostel === 'aryabhatt' ? 'selected' : ''}>Mess-5 — Aryabhatta</option>
+            </select>
+            <div class="sp-disabled-hint" style="color: var(--text3); font-size: 0.72rem; margin-top: 4px;">Change this if your mess was assigned incorrectly</div>
           </div>
         </div>
         <div class="sp-section">
@@ -271,9 +312,13 @@ export function showSettings() {
   });
 
   document.getElementById('spSave').addEventListener('click', () => {
+    const newHostel = document.getElementById('spHostel').value;
+    const hostelChanged = newHostel !== profile.hostel;
+
     const updated = {
       ...profile,
       name: document.getElementById('spName').value.trim() || profile.name,
+      hostel: newHostel,
       age: parseInt(document.getElementById('spAge').value) || profile.age,
       gender: document.getElementById('spGender').value,
       height: parseInt(document.getElementById('spHeight').value) || profile.height,
@@ -284,7 +329,19 @@ export function showSettings() {
     saveProfile(updated);
     closeSettings();
     showGreeting(updated);
-    if (window.showToast) window.showToast('✅ Profile updated!', 'success');
+
+    // If mess changed, update the main hostel selector and trigger reload
+    if (hostelChanged) {
+      localStorage.setItem('selectedHostel', newHostel);
+      const hostelSel = document.getElementById('hostelSelect');
+      if (hostelSel) {
+        hostelSel.value = newHostel;
+        hostelSel.dispatchEvent(new Event('change'));
+      }
+      if (window.showToast) window.showToast('✅ Profile updated! Mess changed — reloading menu.', 'success');
+    } else {
+      if (window.showToast) window.showToast('✅ Profile updated!', 'success');
+    }
   });
 
   document.getElementById('spReset').addEventListener('click', () => {

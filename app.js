@@ -41,6 +41,30 @@ window.addEventListener('DOMContentLoaded', async () => {
     setupHostelRestriction(profile);
     initModules(profile);
   }
+
+  // Fallback for stuck loading states (e.g. Firebase blocked or offline)
+  setTimeout(() => {
+    const ticker = document.getElementById('tickerText');
+    if (ticker && ticker.textContent.includes('Loading latest')) {
+      ticker.textContent = 'Welcome to Mess Menu! (Offline/Cache mode)';
+    }
+    const notice = document.getElementById('committeeNotice');
+    if (notice && notice.textContent.includes('Loading notice')) {
+      notice.textContent = 'Check back later for notices.';
+    }
+    const galCount = document.getElementById('galleryCount');
+    if (galCount && galCount.textContent.includes('Loading')) {
+      galCount.textContent = '0 photos';
+      const dishGrid = document.getElementById('dishGrid');
+      if (dishGrid && dishGrid.innerHTML.includes('spinner')) {
+        dishGrid.innerHTML = '<div class="gallery-empty">Failed to load photos. Check connection.</div>';
+      }
+    }
+    const menuOut = document.querySelector('#menuOutput .loading-spinner');
+    if (menuOut) {
+      document.getElementById('menuOutput').innerHTML = '<div class="menu-card"><p style="text-align:center;color:var(--red)">⚠️ Connection error or loading timeout.</p><button onclick="location.reload()" style="padding:8px 16px; margin: 10px auto; display: block; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text);">Retry Connection</button></div>';
+    }
+  }, 6000);
 });
 
 function initModules(profile) {
@@ -86,6 +110,9 @@ function initModules(profile) {
     const db = window.messApp?.db;
     if (db) {
       initCrowd(db, e.detail.hostel);
+    }
+    if (typeof window.listenToNotice === 'function') {
+      window.listenToNotice();
     }
   });
 }

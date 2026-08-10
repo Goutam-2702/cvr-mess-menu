@@ -1,19 +1,33 @@
 /* =================================================================
-   RATINGS MODULE — Food ratings (Taste, Quality, Quantity, Freshness)
+   RATINGS MODULE — Persistent Per-Dish Ratings with Abuse Prevention
    ================================================================= */
 
-import { doc, setDoc, getDoc, collection, addDoc, query, where, getDocs, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { doc, setDoc, collection, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-const RATING_KEY_PREFIX = 'rated_';
-
-function getRatingKey(hostel, day, mealType) {
-  const date = new Date().toISOString().split('T')[0];
-  return `${RATING_KEY_PREFIX}${hostel}_${day}_${mealType}_${date}`;
+// Generate or retrieve persistent anonymous user fingerprint
+function getFingerprint() {
+  let fp = localStorage.getItem('user_fingerprint');
+  if (!fp) {
+    fp = 'usr_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    localStorage.setItem('user_fingerprint', fp);
+  }
+  return fp;
 }
 
-function hasRated(hostel, day, mealType) {
-  return localStorage.getItem(getRatingKey(hostel, day, mealType)) === '1';
-}
+// Inject styles for dish ratings
+const style = document.createElement('style');
+style.textContent = `
+  .rt-dish-container { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; vertical-align: middle; }
+  .rt-dish-stars { display: inline-flex; gap: 2px; }
+  .rt-dish-star { color: var(--border); font-size: 1.2rem; cursor: pointer; transition: color 0.2s, transform 0.2s; line-height: 1; user-select: none; padding: 4px; touch-action: manipulation; }
+  .rt-dish-star:hover, .rt-dish-stars:hover .rt-dish-star { color: var(--yellow-border); }
+  .rt-dish-star:hover ~ .rt-dish-star { color: var(--border) !important; }
+  .rt-dish-star.active { color: var(--yellow); }
+  .rt-dish-agg { font-size: 0.75rem; color: var(--text3); font-weight: 600; background: var(--surface2); padding: 4px 8px; border-radius: 12px; border: 1px solid var(--border); display: none; }
+  .rt-dish-agg.show { display: inline-flex; align-items: center; gap: 2px; }
+  .rt-dish-agg-star { color: var(--yellow); font-size: 0.8rem; }
+`;
+document.head.appendChild(style);
 
 /* ─── INJECT RATING BUTTONS ────────────────────────────── */
 export function injectRatingButtons() {
@@ -23,212 +37,193 @@ export function injectRatingButtons() {
   const menuCard = document.querySelector('#menuOutput .menu-card');
   if (!menuCard) return;
 
-  // Remove old rating section
-  const old = menuCard.querySelector('.rt-section');
-  if (old) old.remove();
+  // Remove old meal-level rating buttons if any
+  menuCard.querySelectorAll('.rt-inline, .rt-avg-display').forEach(el => el.remove());
 
-  const mealRows = menuCard.querySelectorAll('.meal-row');
-  mealRows.forEach(row => {
-    const iconEl = row.querySelector('.meal-icon');
-    if (!iconEl) return;
-    const classes = iconEl.className;
-    let mealType = null;
-    if (classes.includes('breakfast')) mealType = 'breakfast';
-    else if (classes.includes('lunch')) mealType = 'lunch';
-    else if (classes.includes('snacks')) mealType = 'snacks';
-    else if (classes.includes('dinner')) mealType = 'dinner';
-    else if (classes.includes('dessert')) mealType = 'dessert';
-    else return;
+  // Inject per-dish ratings
+  const items = menuCard.querySelectorAll('.ni-item');
+  items.forEach(itemEl => {
+    // Prevent duplicate injection
+    if (itemEl.querySelector('.rt-dish-container')) return;
 
-    // Don't add if already has rating button
-    if (row.querySelector('.rt-inline')) return;
-
-    const rated = hasRated(app.currentHostel, app.currentSelectedDay, mealType);
+    const input = itemEl.querySelector('.ni-checkbox');
+    if (!input) return;
     
-    const rateBtn = document.createElement('div');
-    rateBtn.className = 'rt-inline';
-    rateBtn.innerHTML = rated
-      ? '<span class="rt-done">✅ Rated</span>'
-      : `<button class="rt-rate-btn" data-meal="${mealType}">⭐ Rate</button>`;
-    row.appendChild(rateBtn);
+    const dishName = input.value;
+    // Determine meal type by finding the closest meal-row
+    const row = itemEl.closest('.meal-row');
+    let mealType = 'unknown';
+    if (row) {
+      const iconClasses = row.querySelector('.meal-icon')?.className || '';
+      if (iconClasses.includes('breakfast')) mealType = 'breakfast';
+      else if (iconClasses.includes('lunch')) mealType = 'lunch';
+      else if (iconClasses.includes('snacks')) mealType = 'snacks';
+      else if (iconClasses.includes('dinner')) mealType = 'dinner';
+      else if (iconClasses.includes('dessert')) mealType = 'dessert';
+    }
 
-    if (!rated) {
-      rateBtn.querySelector('.rt-rate-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        showRatingModal(mealType);
+    const container = document.createElement('span');
+    container.className = 'rt-dish-container';
+    container.dataset.dish = dishName;
+    
+    // Add 5 stars
+    const starsDiv = document.createElement('span');
+    starsDiv.className = 'rt-dish-stars';
+    for (let i = 1; i <= 5; i++) {
+      const star = document.createElement('span');
+      star.className = 'rt-dish-star';
+      star.textContent = '★';
+      star.dataset.val = i;
+      
+      star.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // prevent checking the nutrition checkbox
+        submitDishRating(dishName, mealType, i, starsDiv);
       });
+      starsDiv.appendChild(star);
+    }
+    
+    // Add aggregate display
+    const aggDiv = document.createElement('span');
+    aggDiv.className = 'rt-dish-agg';
+    aggDiv.innerHTML = `<span class="rt-dish-agg-star">★</span> <span class="rt-val"></span> (<span class="rt-cnt"></span>)`;
+
+    container.appendChild(starsDiv);
+    container.appendChild(aggDiv);
+    
+    // Insert after the text span, but before qty picker
+    const textSpan = itemEl.querySelector('.ni-text');
+    if (textSpan) {
+      textSpan.after(container);
+    } else {
+      itemEl.appendChild(container);
     }
   });
 
-  // Show aggregated ratings below menu
+  // Start real-time listener for current day's ratings
   showAggregatedRatings();
 }
 
-/* ─── RATING MODAL ─────────────────────────────────────── */
-function showRatingModal(mealType) {
-  const root = document.getElementById('nutrition-modal-root'); // Reuse modal root
-  if (!root) return;
+/* ─── SUBMIT RATING ────────────────────────────────────── */
+async function submitDishRating(dishName, mealType, ratingVal, starsDiv) {
+  const app = window.messApp;
+  if (!app?.db) {
+    if (window.showToast) window.showToast('Database not connected', 'warning');
+    return;
+  }
 
-  const mealLabel = mealType.charAt(0).toUpperCase() + mealType.slice(1);
-  const mealIcon = { breakfast: '🍳', lunch: '🍱', snacks: '☕', dinner: '🍛', dessert: '🍦' }[mealType] || '🍽️';
+  const fingerprint = getFingerprint();
+  const date = new Date().toISOString().split('T')[0];
+  const hostel = app.currentHostel;
 
-  root.innerHTML = `
-  <div class="nm-overlay nm-show" id="rtOverlay">
-    <div class="nm-modal" style="max-width: 380px">
-      <div class="nm-header" style="background: linear-gradient(135deg, #f59e0b, #d97706)">
-        <h3>${mealIcon} Rate ${mealLabel}</h3>
-        <button class="nm-close" id="rtClose">✕</button>
-      </div>
-      <div class="nm-body">
-        <p class="rt-modal-desc">How was today's ${mealType}?</p>
-        
-        ${['Taste', 'Quality', 'Quantity', 'Freshness'].map(criterion => `
-        <div class="rt-criterion">
-          <div class="rt-criterion-label">${criterion}</div>
-          <div class="rt-stars" data-criterion="${criterion.toLowerCase()}">
-            ${[1,2,3,4,5].map(star => `
-              <button class="rt-star" data-val="${star}" data-criterion="${criterion.toLowerCase()}">★</button>
-            `).join('')}
-          </div>
-        </div>`).join('')}
+  // Custom document ID to enforce one rating per user per dish per day
+  const cleanDish = dishName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  const docId = `${fingerprint}_${hostel}_${date}_${cleanDish}`;
 
-        <button class="nm-log-btn" id="rtSubmit" style="background: linear-gradient(135deg, #f59e0b, #d97706)">⭐ Submit Rating</button>
-      </div>
-    </div>
-  </div>`;
+  try {
+    // Optimistic UI update
+    updateStarsUI(starsDiv, ratingVal);
 
-  const ratings = { taste: 0, quality: 0, quantity: 0, freshness: 0 };
-
-  // Star click handlers
-  root.querySelectorAll('.rt-star').forEach(star => {
-    star.addEventListener('click', () => {
-      const criterion = star.dataset.criterion;
-      const val = parseInt(star.dataset.val);
-      ratings[criterion] = val;
-
-      // Visual feedback
-      star.closest('.rt-stars').querySelectorAll('.rt-star').forEach(s => {
-        s.classList.toggle('rt-star-active', parseInt(s.dataset.val) <= val);
-      });
+    await setDoc(doc(app.db, 'dish_ratings', docId), {
+      fingerprint,
+      hostel,
+      date,
+      mealType,
+      dishName,
+      rating: ratingVal,
+      timestamp: serverTimestamp()
     });
-  });
 
-  document.getElementById('rtClose').addEventListener('click', () => root.innerHTML = '');
-  document.getElementById('rtOverlay').addEventListener('click', (e) => {
-    if (e.target.id === 'rtOverlay') root.innerHTML = '';
-  });
+    if (window.showToast) window.showToast(`⭐ Rated ${dishName} ${ratingVal} stars!`, 'success');
+  } catch (err) {
+    console.error('Rating submit error:', err);
+    if (window.showToast) window.showToast('Failed to submit rating.', 'warning');
+  }
+}
 
-  document.getElementById('rtSubmit').addEventListener('click', async () => {
-    if (Object.values(ratings).some(v => v === 0)) {
-      if (window.showToast) window.showToast('Please rate all criteria', 'warning');
-      return;
-    }
-
-    const app = window.messApp;
-    if (!app?.db) return;
-
-    try {
-      const date = new Date().toISOString().split('T')[0];
-      await addDoc(collection(app.db, 'ratings'), {
-        hostel: app.currentHostel,
-        day: app.currentSelectedDay,
-        mealType,
-        date,
-        ...ratings,
-        average: Math.round(((ratings.taste + ratings.quality + ratings.quantity + ratings.freshness) / 4) * 10) / 10,
-        timestamp: serverTimestamp()
-      });
-
-      localStorage.setItem(getRatingKey(app.currentHostel, app.currentSelectedDay, mealType), '1');
-      root.innerHTML = '';
-      if (window.showToast) window.showToast('⭐ Rating submitted! Thank you.', 'success');
-      injectRatingButtons(); // Refresh to show "Rated"
-    } catch (err) {
-      console.error('Rating submit error:', err);
-      if (window.showToast) window.showToast('Could not submit rating. Try again.', 'warning');
-    }
+function updateStarsUI(starsDiv, val) {
+  starsDiv.querySelectorAll('.rt-dish-star').forEach(s => {
+    s.classList.toggle('active', parseInt(s.dataset.val) <= val);
   });
 }
 
-/* ─── AGGREGATED RATINGS ───────────────────────────────── */
+/* ─── REALTIME AGGREGATION ─────────────────────────────── */
 let ratingsUnsubscribe = null;
 
 async function showAggregatedRatings() {
   const app = window.messApp;
   if (!app?.db || !app?.currentHostel || !app?.currentSelectedDay) return;
 
-  // Clean up old listener
-  if (ratingsUnsubscribe) ratingsUnsubscribe();
+  if (ratingsUnsubscribe) {
+    ratingsUnsubscribe();
+    ratingsUnsubscribe = null;
+  }
 
   const date = new Date().toISOString().split('T')[0];
+  const fp = getFingerprint();
 
   try {
     const q = query(
-      collection(app.db, 'ratings'),
+      collection(app.db, 'dish_ratings'),
       where('hostel', '==', app.currentHostel),
-      where('day', '==', app.currentSelectedDay),
       where('date', '==', date)
     );
 
     ratingsUnsubscribe = onSnapshot(q, (snap) => {
-      if (snap.empty) return;
-
-      const byMeal = {};
+      const stats = {}; // dishName -> { total: 0, count: 0, userRating: 0 }
+      
       snap.docs.forEach(doc => {
         const d = doc.data();
-        if (!byMeal[d.mealType]) byMeal[d.mealType] = [];
-        byMeal[d.mealType].push(d);
+        if (!stats[d.dishName]) stats[d.dishName] = { total: 0, count: 0, userRating: 0 };
+        
+        stats[d.dishName].total += d.rating;
+        stats[d.dishName].count += 1;
+        
+        if (d.fingerprint === fp) {
+          stats[d.dishName].userRating = d.rating;
+        }
       });
 
-      // Update inline rating displays
-      for (const [mealType, entries] of Object.entries(byMeal)) {
-        const avg = entries.reduce((s, e) => s + (e.average || 0), 0) / entries.length;
-        const count = entries.length;
-        updateMealRatingDisplay(mealType, avg, count);
-      }
+      // Update UI
+      const menuCard = document.querySelector('#menuOutput .menu-card');
+      if (!menuCard) return;
+
+      Object.keys(stats).forEach(dish => {
+        const containers = menuCard.querySelectorAll(`.rt-dish-container[data-dish="${dish}"]`);
+        containers.forEach(container => {
+          const s = stats[dish];
+          
+          // Update user's stars if they rated on another device or previous load
+          if (s.userRating > 0) {
+            updateStarsUI(container.querySelector('.rt-dish-stars'), s.userRating);
+          }
+
+          // Update aggregate display
+          if (s.count > 0) {
+            const agg = container.querySelector('.rt-dish-agg');
+            const avg = (s.total / s.count).toFixed(1);
+            agg.querySelector('.rt-val').textContent = avg;
+            agg.querySelector('.rt-cnt').textContent = s.count;
+            agg.classList.add('show');
+          }
+        });
+      });
     });
   } catch (err) {
     console.warn('Ratings fetch error:', err);
   }
 }
 
-function updateMealRatingDisplay(mealType, average, count) {
-  const menuCard = document.querySelector('#menuOutput .menu-card');
-  if (!menuCard) return;
-
-  const rows = menuCard.querySelectorAll('.meal-row');
-  rows.forEach(row => {
-    const iconEl = row.querySelector('.meal-icon');
-    if (!iconEl) return;
-    if (!iconEl.className.includes(mealType)) return;
-
-    // Remove old display
-    const old = row.querySelector('.rt-avg-display');
-    if (old) old.remove();
-
-    if (average > 0) {
-      const display = document.createElement('div');
-      display.className = 'rt-avg-display';
-      display.innerHTML = `<span class="rt-avg-stars">${getStarDisplay(average)}</span> <span class="rt-avg-count">(${average.toFixed(1)}/${count})</span>`;
-      const rateBtn = row.querySelector('.rt-inline');
-      if (rateBtn) rateBtn.before(display);
-      else row.appendChild(display);
-    }
-  });
-}
-
-function getStarDisplay(avg) {
-  let stars = '';
-  for (let i = 1; i <= 5; i++) {
-    if (i <= Math.floor(avg)) stars += '★';
-    else if (i - 0.5 <= avg) stars += '★';
-    else stars += '☆';
-  }
-  return stars;
-}
+// Automatically re-fetch ratings if hostel changes
+document.addEventListener('hostelChanged', () => {
+  showAggregatedRatings();
+});
 
 export function cleanup() {
-  if (ratingsUnsubscribe) ratingsUnsubscribe();
+  if (ratingsUnsubscribe) {
+    ratingsUnsubscribe();
+    ratingsUnsubscribe = null;
+  }
 }
 
 export default { injectRatingButtons, cleanup };

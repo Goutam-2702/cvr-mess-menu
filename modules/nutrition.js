@@ -16,7 +16,8 @@ export const LOCAL_DB = {
   'rajma': { calories: 210, protein: 12, carbs: 32, fat: 4, fiber: 8, sugar: 2, sodium: 480, serving: '1 bowl (200ml)' },
   'chole': { calories: 220, protein: 11, carbs: 30, fat: 6, fiber: 7, sugar: 3, sodium: 500, serving: '1 bowl (200ml)' },
   'kadhi': { calories: 160, protein: 6, carbs: 18, fat: 7, fiber: 2, sugar: 4, sodium: 380, serving: '1 bowl (200ml)' },
-  'roti': { calories: 85, protein: 3, carbs: 18, fat: 0.5, fiber: 2, sugar: 0, sodium: 120, serving: '1 piece' },
+  'roti': { calories: 85, protein: 3, carbs: 18, fat: 0.5, fiber: 2, sugar: 0, sodium: 120, serving: '1 piece', isRoti: true },
+  'ghee roti': { calories: 150, protein: 3, carbs: 18, fat: 7, fiber: 2, sugar: 0, sodium: 130, serving: '1 piece', isRoti: true },
   'plain rice': { calories: 210, protein: 4, carbs: 46, fat: 0.5, fiber: 1, sugar: 0, sodium: 5, serving: '1 plate (150g)' },
   'rice': { calories: 210, protein: 4, carbs: 46, fat: 0.5, fiber: 1, sugar: 0, sodium: 5, serving: '1 plate (150g)' },
   'jeera rice': { calories: 230, protein: 4, carbs: 44, fat: 4, fiber: 1, sugar: 0, sodium: 280, serving: '1 plate (150g)' },
@@ -315,12 +316,54 @@ export function injectMenuCheckboxes() {
           if (key.includes(dbKey) || dbKey.includes(key)) { dbMatch = val; break; }
         }
       }
+      const isRoti = dbMatch?.isRoti || /\b(roti|chapati|phulka)\b/i.test(key);
       const calInfo = dbMatch ? `<span style="font-size: 0.7rem; color: var(--text3); font-weight: normal; margin-left: 4px;">(${dbMatch.calories} cal / ${dbMatch.serving})</span>` : '';
+
+      if (isRoti && dbMatch) {
+        // Quantity picker for roti items
+        return `<label class="ni-item ni-roti-item">
+          <input type="checkbox" class="ni-checkbox" id="${id}" data-food="${item}" value="${item}" data-is-roti="1" data-cal-per="${dbMatch.calories}">
+          <span class="ni-text">${item}${calInfo}</span>
+          <span class="ni-qty-picker" data-for="${id}">
+            <button type="button" class="ni-qty-btn ni-qty-minus" aria-label="Decrease">−</button>
+            <span class="ni-qty-val" id="${id}-qty">2</span>
+            <button type="button" class="ni-qty-btn ni-qty-plus" aria-label="Increase">+</button>
+          </span>
+          <span class="ni-qty-cal" id="${id}-total" style="font-size: 0.7rem; color: var(--accent); font-weight: 600; margin-left: 4px;">= ${dbMatch.calories * 2} cal</span>
+        </label>`;
+      }
+
       return `<label class="ni-item">
         <input type="checkbox" class="ni-checkbox" id="${id}" data-food="${item}" value="${item}">
         <span class="ni-text">${item}${calInfo}</span>
       </label>`;
     }).join('');
+
+    // Attach quantity picker event listeners
+    mealText.querySelectorAll('.ni-qty-picker').forEach(picker => {
+      const cbId = picker.dataset.for;
+      const cb = document.getElementById(cbId);
+      const qtyEl = document.getElementById(`${cbId}-qty`);
+      const totalEl = document.getElementById(`${cbId}-total`);
+      const calPer = parseInt(cb?.dataset.calPer) || 85;
+
+      picker.querySelector('.ni-qty-minus')?.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        let qty = parseInt(qtyEl.textContent) || 2;
+        qty = Math.max(1, qty - 1);
+        qtyEl.textContent = qty;
+        totalEl.textContent = `= ${calPer * qty} cal`;
+        if (cb) { cb.checked = true; cb.dataset.qty = qty; }
+      });
+      picker.querySelector('.ni-qty-plus')?.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        let qty = parseInt(qtyEl.textContent) || 2;
+        qty = Math.min(10, qty + 1);
+        qtyEl.textContent = qty;
+        totalEl.textContent = `= ${calPer * qty} cal`;
+        if (cb) { cb.checked = true; cb.dataset.qty = qty; }
+      });
+    });
   });
 
   // Add Analyze button if not present
@@ -354,7 +397,18 @@ async function handleAnalyze() {
     return;
   }
 
-  const items = Array.from(checked).map(cb => cb.value);
+  // Build items list, expanding roti quantities
+  const items = [];
+  checked.forEach(cb => {
+    const isRoti = cb.dataset.isRoti === '1';
+    const qty = parseInt(cb.dataset.qty) || 1;
+    if (isRoti && qty > 1) {
+      // Add multiple entries so analyzeMeal sums them correctly
+      for (let i = 0; i < qty; i++) items.push(cb.value);
+    } else {
+      items.push(cb.value);
+    }
+  });
   showNutritionModal(null, true); // Show loading state
 
   try {
@@ -479,6 +533,11 @@ function showNutritionModal(result, loading) {
         ${analysis.benefits.length > 0 ? `<div class="nm-analysis-section nm-benefits"><h4>✅ Benefits</h4><ul>${analysis.benefits.map(b => `<li>${b}</li>`).join('')}</ul></div>` : ''}
         ${analysis.drawbacks.length > 0 ? `<div class="nm-analysis-section nm-drawbacks"><h4>⚠️ Watch Out</h4><ul>${analysis.drawbacks.map(d => `<li>${d}</li>`).join('')}</ul></div>` : ''}
         ${analysis.suggestions.length > 0 ? `<div class="nm-analysis-section nm-suggestions"><h4>💡 Suggestions</h4><ul>${analysis.suggestions.map(s => `<li>${s}</li>`).join('')}</ul></div>` : ''}
+
+        <!-- Disclaimer -->
+        <div class="nm-disclaimer" style="font-size: 0.72rem; color: var(--text3); padding: 10px 14px; background: rgba(245,158,11,0.08); border-radius: 8px; margin-bottom: 14px; line-height: 1.5;">
+          ⚠️ <strong>Disclaimer:</strong> Calorie and nutrient values are approximate estimates based on standard serving sizes. Actual values may vary depending on portion size, preparation method, oil/butter/ghee used, and ingredient quantities. These are not medically accurate measurements.
+        </div>
 
         <!-- Log button -->
         <button class="nm-log-btn" id="nmLogBtn">📊 Log This Meal to Tracker</button>

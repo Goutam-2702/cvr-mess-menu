@@ -112,15 +112,30 @@ window.addEventListener("DOMContentLoaded", () => {
   if (sel) sel.value = today;
 
   // Handle Hostel Selection
+  function normalizeHostel(val) {
+    if (!val) return null;
+    const v = val.toLowerCase().replace(/[^a-z]/g, '');
+    if (v.includes('raman') || v.includes('cvr')) return 'c v raman';
+    if (v.includes('arya')) return 'aryabhatt';
+    return null;
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
-  const urlHostel = urlParams.get('hostel');
-  const storedHostel = localStorage.getItem("selectedHostel");
+  const urlHostel = normalizeHostel(urlParams.get('hostel'));
+  const storedHostel = normalizeHostel(localStorage.getItem("selectedHostel"));
   
-  if (urlHostel === "c v raman" || urlHostel === "aryabhatt") {
+  if (urlHostel) {
     currentHostel = urlHostel;
     localStorage.setItem("selectedHostel", currentHostel);
-  } else if (storedHostel === "c v raman" || storedHostel === "aryabhatt") {
+    
+    // Update URL to clean format without reloading
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('hostel', currentHostel);
+    window.history.replaceState({}, '', newUrl);
+  } else if (storedHostel) {
     currentHostel = storedHostel;
+  } else {
+    currentHostel = "c v raman"; // Fallback
   }
   
   const hostelSel = document.getElementById("hostelSelect");
@@ -235,12 +250,27 @@ function updateHostelUI() {
   document.title = currentHostel === "aryabhatt" ? "Aryabhatt Mess Menu" : "CVR Mess Menu";
 }
 
-/* ─── FIREBASE: NOTICE ────────────────────────────────────── */
+let noticeUnsubscribe = null;
 function listenToNotice() {
-  onSnapshot(doc(db, "settings", "notice"), (snap) => {
-    if (snap.exists()) {
-      const d = snap.data();
-      latestNotice = { title: d.title || "Notice", content: d.content || d.message || "No notice.", createdAt: d.updatedAt || d.createdAt || null };
+  if (noticeUnsubscribe) noticeUnsubscribe();
+  
+  // Need to import query, where from firestore if not already imported, but script.js uses a global import block.
+  // Actually, wait, let's just use the query. script.js already has `query, where`?
+  // Yes, it imports them at the top.
+  
+  const q = query(
+    collection(db, "notices"),
+    where("hostel", "in", [currentHostel, "all"]),
+    orderBy("createdAt", "desc"),
+    limit(1)
+  );
+  
+  noticeUnsubscribe = onSnapshot(q, (snap) => {
+    if (!snap.empty) {
+      const d = snap.docs[0].data();
+      latestNotice = { title: d.title || "Notice", content: d.content || "Check notice board.", createdAt: d.createdAt || null };
+    } else {
+      latestNotice = { title: "Notice Board", content: "No new notices.", createdAt: null };
     }
     renderNotice();
     
@@ -250,22 +280,8 @@ function listenToNotice() {
     }
     previousNoticeStr = currentNoticeStr;
     isFirstNotice = false;
-  }, () => {
-    const q = query(collection(db, "notices"), orderBy("createdAt","desc"), limit(1));
-    onSnapshot(q, snap => {
-      if (!snap.empty) {
-        const d = snap.docs[0].data();
-        latestNotice = { title: d.title || "Notice", content: d.content || "Check notice board.", createdAt: d.createdAt || null };
-        renderNotice();
-        
-        const currentNoticeStr = latestNotice.title + latestNotice.content;
-        if (!isFirstNotice && previousNoticeStr && previousNoticeStr !== currentNoticeStr) {
-          showToast("📢 New notice!", "warning");
-        }
-        previousNoticeStr = currentNoticeStr;
-        isFirstNotice = false;
-      }
-    });
+  }, (err) => {
+    console.warn("Notice fetch error:", err);
   });
 }
 

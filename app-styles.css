@@ -141,11 +141,17 @@
 .sp-divider { height: 1px; background: var(--border); margin: 16px 0; }
 
 /* ═══ NUTRITION CHECKBOXES ════════════════════════════════ */
-.ni-item { display: inline-flex; align-items: center; gap: 5px; margin: 2px 4px 2px 0; cursor: pointer; padding: 3px 8px; border-radius: 20px; border: 1px solid transparent; transition: all var(--t); font-size: .88rem; }
+.ni-item { display: inline-flex; align-items: center; gap: 5px; margin: 2px 4px 2px 0; cursor: pointer; padding: 3px 8px; border-radius: 20px; border: 1px solid transparent; transition: all var(--t); font-size: .88rem; flex-wrap: wrap; }
 .ni-item:hover { background: var(--accent-glow); border-color: var(--border); }
-.ni-checkbox { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
-.ni-text { color: var(--text2); font-weight: 500; }
+.ni-checkbox { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.ni-text { color: var(--text2); font-weight: 500; word-break: break-word; }
 .ni-checkbox:checked + .ni-text { color: var(--accent); font-weight: 600; }
+
+.ni-qty-picker { display: inline-flex; align-items: center; gap: 8px; margin-left: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 2px; }
+.ni-qty-btn { background: none; border: none; font-size: 1.1rem; color: var(--text2); cursor: pointer; padding: 2px 8px; line-height: 1; border-radius: 8px; touch-action: manipulation; }
+.ni-qty-btn:hover { background: var(--border); color: var(--text); }
+.ni-qty-val { font-size: 0.85rem; font-weight: 700; color: var(--text); min-width: 14px; text-align: center; }
+.ni-qty-cal { white-space: nowrap; }
 
 .ni-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1.5px solid var(--border); flex-wrap: wrap; }
 .ni-analyze-btn {
@@ -365,12 +371,13 @@
 /* ═══ RATINGS ═════════════════════════════════════════════ */
 .rt-inline { margin-left: auto; flex-shrink: 0; }
 .rt-rate-btn {
-  padding: 4px 12px; border: 1.5px solid var(--yellow-border); border-radius: 20px;
+  padding: 8px 16px; border: 1.5px solid var(--yellow-border); border-radius: 20px;
   background: var(--yellow-bg); color: var(--yellow); font-family: 'Inter', sans-serif;
-  font-size: .72rem; font-weight: 700; cursor: pointer; transition: all var(--t); box-shadow: none;
+  font-size: .75rem; font-weight: 700; cursor: pointer; transition: all var(--t); box-shadow: none;
+  min-height: 36px; touch-action: manipulation;
 }
 .rt-rate-btn:hover { background: var(--yellow); color: white; transform: none; box-shadow: none; }
-.rt-done { font-size: .72rem; color: var(--green); font-weight: 600; }
+.rt-done { font-size: .72rem; color: var(--green); font-weight: 600; padding: 8px; }
 
 .rt-modal-desc { font-size: .88rem; color: var(--text2); margin-bottom: 18px; text-align: center; }
 

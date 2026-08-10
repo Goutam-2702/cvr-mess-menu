@@ -203,6 +203,7 @@
       <button class="tab-btn"          onclick="switchTab('special',this)">⭐ Special Dinner</button>
       <button class="tab-btn"          onclick="switchTab('timings',this)">🕒 Timings</button>
       <button class="tab-btn"          onclick="switchTab('crowd',this)">📊 Crowd</button>
+      <button class="tab-btn"          onclick="switchTab('ratings',this)">📈 Ratings</button>
     </div>
 
     <!-- ── TAB: MENU ──────────────────────────────────────────── -->
@@ -231,16 +232,35 @@
     <div class="tab-panel" id="tab-notice">
       <div class="card">
         <div class="card-title">✏️ Post New Notice</div>
+        <div class="form-row">
+          <label for="noticeHostel">Target Hostel</label>
+          <select id="noticeHostel" style="width:100%; padding: 10px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--border); background: var(--surface2); font-family: inherit; font-size: 0.9rem;">
+            <option value="all">All Hostels</option>
+            <option value="c v raman">C V Raman</option>
+            <option value="aryabhatt">Aryabhatta</option>
+          </select>
+        </div>
         <div class="form-row"><label for="noticeTitle">Notice Title</label><input id="noticeTitle" placeholder="e.g. Special Meal Tomorrow" maxlength="80"></div>
         <div class="form-row"><label for="noticeContent">Message</label><textarea id="noticeContent" placeholder="Full notice text…" maxlength="500"></textarea><span style="font-size:.72rem;color:var(--text3);float:right;margin-top:4px" id="noticeCC">0/500</span></div>
         <div class="btn-group">
           <button class="btn btn-purple" onclick="postCurrentNotice()">📢 Post as Live Notice</button>
-          <button class="btn btn-primary" onclick="addNoticeToHistory()">📋 Save to History</button>
+          <button class="btn btn-green" onclick="updateCrowdLevel()">📡 Update Crowd Level</button>
         </div>
       </div>
+    </div>
+
+    <!-- ── TAB: RATINGS ───────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-ratings">
       <div class="card">
-        <div class="card-title">🗂️ Notice History</div>
-        <div class="notice-list" id="noticeList"><p style="color:var(--text3);font-size:.85rem">Loading…</p></div>
+        <div class="card-title">📈 Dish Ratings</div>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:16px">View aggregated ratings submitted by students for each dish.</p>
+        <div class="form-row">
+          <label>Select Date</label>
+          <input type="date" id="adminRatingsDate" onchange="fetchAdminRatings()">
+        </div>
+        <div id="adminRatingsContent" style="margin-top:16px;">
+          <p style="color:var(--text3);font-size:.85rem;text-align:center;">Select a date to view ratings.</p>
+        </div>
       </div>
     </div>
 
@@ -402,7 +422,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, addDoc, getDoc, deleteDoc, collection, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, addDoc, getDoc, getDocs, deleteDoc, collection, query, orderBy, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -454,6 +474,65 @@ async function initAdmin() {
   if (window.listenToCrowdAdmin) window.listenToCrowdAdmin();
 }
 
+/* RATINGS */
+window.fetchAdminRatings = async () => {
+  const datePicker = document.getElementById("adminRatingsDate");
+  const content = document.getElementById("adminRatingsContent");
+  if(!datePicker || !content) return;
+  
+  let dateVal = datePicker.value;
+  if(!dateVal) {
+    dateVal = new Date().toISOString().split('T')[0];
+    datePicker.value = dateVal;
+  }
+  
+  content.innerHTML = '<p style="color:var(--text3);text-align:center">Loading...</p>';
+  try {
+    const q = query(collection(db, "dish_ratings"), where("hostel", "==", currentAdminHostel), where("date", "==", dateVal));
+    const snap = await getDocs(q);
+    
+    if (snap.empty) {
+      content.innerHTML = '<p style="color:var(--text3);text-align:center">No ratings found for this date.</p>';
+      return;
+    }
+    
+    const stats = {};
+    snap.docs.forEach(d => {
+      const rd = d.data();
+      if (!stats[rd.dishName]) stats[rd.dishName] = { total: 0, count: 0, meal: rd.mealType || 'unknown' };
+      stats[rd.dishName].total += rd.rating;
+      stats[rd.dishName].count += 1;
+    });
+    
+    const sortedDishes = Object.keys(stats).sort((a,b) => {
+      const avgA = stats[a].total / stats[a].count;
+      const avgB = stats[b].total / stats[b].count;
+      return avgB - avgA;
+    });
+    
+    let html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+    sortedDishes.forEach(dish => {
+      const s = stats[dish];
+      const avg = (s.total / s.count).toFixed(1);
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);padding:10px 14px;border-radius:12px;border:1px solid var(--border);">
+        <div>
+          <div style="font-weight:600;color:var(--text);">${dish}</div>
+          <div style="font-size:0.75rem;color:var(--text3);text-transform:capitalize;">${s.meal}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;color:var(--yellow);font-size:1.1rem;">★ ${avg}</div>
+          <div style="font-size:0.75rem;color:var(--text3);">${s.count} ratings</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    content.innerHTML = '<p style="color:var(--red);text-align:center">Error fetching ratings.</p>';
+  }
+};
+
 window.onAdminHostelChange = async () => {
   currentAdminHostel = document.getElementById("adminHostelSelect").value;
   localStorage.setItem("adminSelectedHostel", currentAdminHostel);
@@ -461,6 +540,9 @@ window.onAdminHostelChange = async () => {
   await loadTimings();
   listenDishes();
   if (window.listenToCrowdAdmin) window.listenToCrowdAdmin();
+  if (document.getElementById("tab-ratings")?.classList.contains("active")) {
+    fetchAdminRatings();
+  }
   showSaved("✅ Switched to " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman"));
 };
 
@@ -480,6 +562,10 @@ window.switchTab = (name, btn) => {
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("tab-"+name).classList.add("active");
   btn.classList.add("active");
+  
+  if (name === 'ratings') {
+    if (window.fetchAdminRatings) window.fetchAdminRatings();
+  }
 };
 
 /* MENU EDITOR */
@@ -542,23 +628,26 @@ window.updatePreview = () => {
 
 /* NOTICES */
 window.postCurrentNotice = async () => {
-  const t=gv("noticeTitle"),c=gv("noticeContent");
+  const t=gv("noticeTitle"),c=gv("noticeContent"),h=gv("noticeHostel")||"all";
   if(!t||!c) { alert("Fill title and message."); return; }
-  try { await setDoc(doc(db,"settings","notice"),{title:t,content:c,updatedAt:serverTimestamp()}); showSaved("✅ Notice live on main page!"); }
+  try { await setDoc(doc(db,"settings","notice"),{title:t,content:c,hostel:h,updatedAt:serverTimestamp()}); showSaved("✅ Notice live on main page!"); }
   catch(e) { alert(e.message); }
 };
 window.addNoticeToHistory = async () => {
-  const t=gv("noticeTitle"),c=gv("noticeContent");
+  const t=gv("noticeTitle"),c=gv("noticeContent"),h=gv("noticeHostel")||"all";
   if(!t||!c) { alert("Fill title and message."); return; }
   try {
-    await addDoc(collection(db,"notices"),{title:t,content:c,createdAt:serverTimestamp()});
+    await addDoc(collection(db,"notices"),{title:t,content:c,hostel:h,createdAt:serverTimestamp()});
     document.getElementById("noticeTitle").value=""; document.getElementById("noticeContent").value=""; document.getElementById("noticeCC").textContent="0/500";
     showSaved("✅ Notice added to history!");
   } catch(e) { alert(e.message); }
 };
+let noticesUnsubscribe = null;
 function listenNotices() {
-  const q=query(collection(db,"notices"),orderBy("createdAt","desc"));
-  onSnapshot(q, snap => {
+  if (noticesUnsubscribe) noticesUnsubscribe();
+  // We want to see 'all' and the current admin hostel
+  const q=query(collection(db,"notices"), where("hostel","in",[currentAdminHostel,"all"]), orderBy("createdAt","desc"));
+  noticesUnsubscribe = onSnapshot(q, snap => {
     const list=document.getElementById("noticeList"), st=document.getElementById("statNotices");
     if(!list) return;
     if(st) st.textContent=snap.size;
@@ -567,7 +656,8 @@ function listenNotices() {
       const data=d.data();
       let date="";
       if(data.createdAt?.toDate) date=data.createdAt.toDate().toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-      return `<div class="notice-item"><div class="nc"><div class="ntitle">${san(data.title)}</div><div class="nbody">${san(data.content)}</div>${date?`<div class="nmeta">📅 ${date}</div>`:""}</div><button class="del-btn" onclick="delNotice('${d.id}')">🗑 Delete</button></div>`;
+      const hBadge = data.hostel === 'all' ? '<span style="font-size:0.7rem;color:var(--text3);border:1px solid var(--border);padding:2px 6px;border-radius:10px;">All Hostels</span>' : `<span style="font-size:0.7rem;color:var(--accent);border:1px solid var(--accent);padding:2px 6px;border-radius:10px;background:var(--accent-glow)">${data.hostel}</span>`;
+      return `<div class="notice-item"><div class="nc"><div class="ntitle">${san(data.title)} ${hBadge}</div><div class="nbody">${san(data.content)}</div>${date?`<div class="nmeta">📅 ${date}</div>`:""}</div><button class="del-btn" onclick="delNotice('${d.id}')">🗑 Delete</button></div>`;
     }).join("");
   });
 }
