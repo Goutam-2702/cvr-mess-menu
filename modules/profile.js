@@ -159,7 +159,7 @@ export function showGreeting(profile) {
 
   const container = document.querySelector('.logo-container');
   if (!container) return;
-  
+
   // Remove existing greeting if any
   const old = document.getElementById('userGreeting');
   if (old) old.remove();
@@ -181,12 +181,15 @@ export function showGreeting(profile) {
 export function setupHostelRestriction(profile) {
   if (!profile?.hostel) return;
 
-  // Set the hostel dropdown to user's hostel
+  // Set the hostel dropdown to user's hostel on initial load
   const hostelSel = document.getElementById('hostelSelect');
   if (hostelSel) {
-    hostelSel.value = profile.hostel;
-    // Trigger the existing hostel change logic
-    hostelSel.dispatchEvent(new Event('change'));
+    // Only dispatch change if it's different from the URL param so we don't double load
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.get('hostel')) {
+      hostelSel.value = profile.hostel;
+      hostelSel.dispatchEvent(new Event('change'));
+    }
   }
 
   // Intercept hostel switch attempts (reads latest profile each time)
@@ -203,10 +206,9 @@ export function setupHostelRestriction(profile) {
 
 function showAccessDenied(userHostel) {
   const hostelName = userHostel === 'aryabhatt' ? 'Aryabhatta' : 'C.V. Raman';
-  const otherName = userHostel === 'aryabhatt' ? 'C.V. Raman' : 'Aryabhatta';
   
   if (window.showToast) {
-    window.showToast(`🚫 You belong to ${hostelName} mess. To switch, update your mess in ⚙️ Settings.`, 'warning');
+    window.showToast(`🚫 You belong to ${hostelName} mess. Mess assignments cannot be changed.`, 'warning');
   }
 }
 
@@ -246,11 +248,11 @@ export function showSettings() {
           </div>
           <div class="sp-form-row">
             <label class="sp-label">Your Mess</label>
-            <select class="sp-input" id="spHostel">
+            <select class="sp-input" id="spHostel" disabled>
               <option value="c v raman" ${profile.hostel === 'c v raman' ? 'selected' : ''}>Mess-4 — C.V. Raman</option>
               <option value="aryabhatt" ${profile.hostel === 'aryabhatt' ? 'selected' : ''}>Mess-5 — Aryabhatta</option>
             </select>
-            <div class="sp-disabled-hint" style="color: var(--text3); font-size: 0.72rem; margin-top: 4px;">Change this if your mess was assigned incorrectly</div>
+            <div class="sp-disabled-hint">Mess assignment cannot be changed</div>
           </div>
         </div>
         <div class="sp-section">
