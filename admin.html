@@ -243,8 +243,7 @@
         <div class="form-row"><label for="noticeTitle">Notice Title</label><input id="noticeTitle" placeholder="e.g. Special Meal Tomorrow" maxlength="80"></div>
         <div class="form-row"><label for="noticeContent">Message</label><textarea id="noticeContent" placeholder="Full notice text…" maxlength="500"></textarea><span style="font-size:.72rem;color:var(--text3);float:right;margin-top:4px" id="noticeCC">0/500</span></div>
         <div class="btn-group">
-          <button class="btn btn-purple" onclick="postCurrentNotice()">📢 Post as Live Notice</button>
-          <button class="btn btn-green" onclick="updateCrowdLevel()">📡 Update Crowd Level</button>
+          <button class="btn btn-purple" onclick="addNoticeToHistory()">📢 Post Notice</button>
         </div>
       </div>
     </div>
@@ -627,12 +626,7 @@ window.updatePreview = () => {
 };
 
 /* NOTICES */
-window.postCurrentNotice = async () => {
-  const t=gv("noticeTitle"),c=gv("noticeContent"),h=gv("noticeHostel")||"all";
-  if(!t||!c) { alert("Fill title and message."); return; }
-  try { await setDoc(doc(db,"settings","notice"),{title:t,content:c,hostel:h,updatedAt:serverTimestamp()}); showSaved("✅ Notice live on main page!"); }
-  catch(e) { alert(e.message); }
-};
+
 window.addNoticeToHistory = async () => {
   const t=gv("noticeTitle"),c=gv("noticeContent"),h=gv("noticeHostel")||"all";
   if(!t||!c) { alert("Fill title and message."); return; }
