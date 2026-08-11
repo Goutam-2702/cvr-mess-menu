@@ -260,16 +260,23 @@ function listenToNotice() {
   
   const q = query(
     collection(db, "notices"),
-    where("hostel", "in", [currentHostel, "all"]),
     orderBy("createdAt", "desc"),
-    limit(1)
+    limit(10)
   );
   
   noticeUnsubscribe = onSnapshot(q, (snap) => {
+    let found = false;
     if (!snap.empty) {
-      const d = snap.docs[0].data();
-      latestNotice = { title: d.title || "Notice", content: d.content || "Check notice board.", createdAt: d.createdAt || null };
-    } else {
+      for (const doc of snap.docs) {
+        const d = doc.data();
+        if (d.hostel === currentHostel || d.hostel === "all") {
+          latestNotice = { title: d.title || "Notice", content: d.content || "Check notice board.", createdAt: d.createdAt || null };
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
       latestNotice = { title: "Notice Board", content: "No new notices.", createdAt: null };
     }
     renderNotice();

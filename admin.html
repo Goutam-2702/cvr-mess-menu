@@ -639,14 +639,21 @@ window.addNoticeToHistory = async () => {
 let noticesUnsubscribe = null;
 function listenNotices() {
   if (noticesUnsubscribe) noticesUnsubscribe();
-  // We want to see 'all' and the current admin hostel
-  const q=query(collection(db,"notices"), where("hostel","in",[currentAdminHostel,"all"]), orderBy("createdAt","desc"));
+  const q=query(collection(db,"notices"), orderBy("createdAt","desc"), limit(50));
   noticesUnsubscribe = onSnapshot(q, snap => {
     const list=document.getElementById("noticeList"), st=document.getElementById("statNotices");
     if(!list) return;
-    if(st) st.textContent=snap.size;
-    if(snap.empty) { list.innerHTML="<p style='color:var(--text3);font-size:.85rem'>No notices yet.</p>"; return; }
-    list.innerHTML=snap.docs.map(d => {
+    
+    // Filter client-side to avoid composite index requirement
+    const filteredDocs = snap.docs.filter(d => {
+      const h = d.data().hostel;
+      return h === currentAdminHostel || h === "all";
+    });
+
+    if(st) st.textContent=filteredDocs.length;
+    if(filteredDocs.length === 0) { list.innerHTML="<p style='color:var(--text3);font-size:.85rem'>No notices yet.</p>"; return; }
+    
+    list.innerHTML=filteredDocs.map(d => {
       const data=d.data();
       let date="";
       if(data.createdAt?.toDate) date=data.createdAt.toDate().toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
