@@ -184,16 +184,21 @@ function getFallbackNutritionResponse(raw) {
   const tracker = getTrackerData();
 
   // "How many calories in X rotis and Y"
-  const rotiMatch = text.match(/(\d+)\s*(roti|chapati|phulka)/i);
+  const rotiMatch = text.match(/(\d+)\s*(roti|chapati|phulka|poori|dosa|utapam|uttapam)s?/i);
   if (rotiMatch) {
     const qty = parseInt(rotiMatch[1]);
-    const calPer = 85;
+    const itemName = rotiMatch[2].toLowerCase();
+    let calPer = 85;
+    if (itemName === 'poori') calPer = 120;
+    else if (itemName === 'dosa') calPer = 280;
+    else if (itemName.includes('utapam')) calPer = 200;
+    
     const rotiCal = calPer * qty;
     let totalCal = rotiCal;
-    const parts = [`${qty} roti: ~${rotiCal} cal`];
+    const parts = [`${qty} ${itemName}: ~${rotiCal} cal`];
 
     // Check for other items mentioned
-    const otherItems = text.replace(/\d+\s*(roti|chapati|phulka)/i, '').replace(/and|with|plus/gi, ',').split(',').map(s => s.trim()).filter(s => s.length > 2);
+    const otherItems = text.replace(new RegExp(`\\d+\\s*${itemName}s?`, 'i'), '').replace(/and|with|plus/gi, ',').split(',').map(s => s.trim()).filter(s => s.length > 2);
     for (const item of otherItems) {
       const match = findInLocalDB(item);
       if (match) {

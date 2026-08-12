@@ -316,7 +316,7 @@ export function injectMenuCheckboxes() {
           if (key.includes(dbKey) || dbKey.includes(key)) { dbMatch = val; break; }
         }
       }
-      const isRoti = dbMatch?.isRoti || /\b(roti|chapati|phulka)\b/i.test(key);
+      const isRoti = dbMatch?.isRoti || /\b(roti|chapati|phulka|poori|dosa|utapam|uttapam)\b/i.test(key);
       const calInfo = dbMatch ? `<span style="font-size: 0.7rem; color: var(--text3); font-weight: normal; margin-left: 4px;">(${dbMatch.calories} cal / ${dbMatch.serving})</span>` : '';
 
       if (isRoti && dbMatch) {
