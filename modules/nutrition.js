@@ -95,6 +95,78 @@ export const LOCAL_DB = {
   'sev': { calories: 200, protein: 5, carbs: 22, fat: 11, fiber: 2, sugar: 1, sodium: 500, serving: '1 bowl' },
   'toast': { calories: 60, protein: 2, carbs: 12, fat: 0.5, fiber: 1, sugar: 1, sodium: 140, serving: '1 slice' },
   'seasonal fruit': { calories: 60, protein: 1, carbs: 14, fat: 0, fiber: 2, sugar: 10, sodium: 2, serving: '1 piece' },
+  // New & live menu items
+  'french fries': { calories: 250, protein: 3, carbs: 35, fat: 12, fiber: 3, sugar: 0, sodium: 300, serving: '1 small plate (100g)' },
+  'lauki chana': { calories: 120, protein: 5, carbs: 16, fat: 4, fiber: 4, sugar: 2, sodium: 350, serving: '1 bowl (200ml)' },
+  'tomato sauce': { calories: 20, protein: 0, carbs: 5, fat: 0, fiber: 0, sugar: 4, sodium: 170, serving: '1 tbsp' },
+  'punugulu': { calories: 180, protein: 3, carbs: 24, fat: 9, fiber: 1, sugar: 0, sodium: 280, serving: '4 pieces' },
+  'bhuni mirchi': { calories: 25, protein: 0.5, carbs: 2, fat: 2, fiber: 1, sugar: 0, sodium: 100, serving: '2 pieces' },
+  'ice cream': { calories: 150, protein: 3, carbs: 18, fat: 8, fiber: 0, sugar: 15, sodium: 50, serving: '1 scoop' },
+  'sewain': { calories: 200, protein: 5, carbs: 32, fat: 6, fiber: 0, sugar: 20, sodium: 50, serving: '1 bowl' },
+  'shikanji': { calories: 60, protein: 0, carbs: 15, fat: 0, fiber: 0, sugar: 14, sodium: 100, serving: '1 glass' },
+  'chhanch': { calories: 40, protein: 2, carbs: 4, fat: 1.5, fiber: 0, sugar: 3, sodium: 120, serving: '1 glass' },
+  'pyaaz ki kachori': { calories: 220, protein: 4, carbs: 28, fat: 11, fiber: 2, sugar: 1, sodium: 400, serving: '1 piece' },
+  'chana chat': { calories: 150, protein: 6, carbs: 22, fat: 4, fiber: 5, sugar: 2, sodium: 350, serving: '1 bowl' },
+  'pyaz ke pakode': { calories: 180, protein: 4, carbs: 20, fat: 10, fiber: 2, sugar: 1, sodium: 320, serving: '3 pieces' },
+  'besan ka chilla': { calories: 160, protein: 7, carbs: 18, fat: 6, fiber: 3, sugar: 1, sodium: 280, serving: '1 piece' },
+  'fish fry with gravy': { calories: 280, protein: 22, carbs: 8, fat: 18, fiber: 1, sugar: 1, sodium: 450, serving: '1 plate (2 pieces)' },
+  'egg bhuji': { calories: 180, protein: 12, carbs: 4, fat: 13, fiber: 0.5, sugar: 1, sodium: 320, serving: '1 plate (2 eggs)' },
+  'egg bhurji': { calories: 180, protein: 12, carbs: 4, fat: 13, fiber: 0.5, sugar: 1, sodium: 320, serving: '1 plate (2 eggs)' },
+  'egg omelet': { calories: 160, protein: 12, carbs: 2, fat: 12, fiber: 0, sugar: 0.5, sodium: 280, serving: '1 plate (2 eggs)' },
+  'egg omelette': { calories: 160, protein: 12, carbs: 2, fat: 12, fiber: 0, sugar: 0.5, sodium: 280, serving: '1 plate (2 eggs)' },
+  'gravy': { calories: 80, protein: 2, carbs: 8, fat: 5, fiber: 1, sugar: 2, sodium: 300, serving: '1 small bowl (100ml)' },
+  'makhni': { calories: 220, protein: 10, carbs: 24, fat: 10, fiber: 4, sugar: 3, sodium: 500, serving: '1 bowl (200ml)' },
+  'veg biriyani': { calories: 350, protein: 8, carbs: 52, fat: 12, fiber: 3, sugar: 2, sodium: 500, serving: '1 plate' },
+  'lasi': { calories: 160, protein: 5, carbs: 24, fat: 4, fiber: 0, sugar: 20, sodium: 60, serving: '1 glass' },
+  'pakorda': { calories: 180, protein: 4, carbs: 20, fat: 10, fiber: 2, sugar: 1, sodium: 320, serving: '3 pieces' },
+  
+  // Handled partial/word match improvements
+  'aloo soyabean': { calories: 160, protein: 8, carbs: 20, fat: 6, fiber: 4, sugar: 2, sodium: 380, serving: '1 bowl' },
+  'aloo soybean': { calories: 160, protein: 8, carbs: 20, fat: 6, fiber: 4, sugar: 2, sodium: 380, serving: '1 bowl' },
+  'seasonal sabji': { calories: 150, protein: 4, carbs: 16, fat: 7, fiber: 4, sugar: 3, sodium: 400, serving: '1 bowl (200ml)' },
+  'chana dal': { calories: 160, protein: 9, carbs: 22, fat: 4, fiber: 5, sugar: 2, sodium: 350, serving: '1 bowl' },
+  'aloo cury': { calories: 180, protein: 3, carbs: 24, fat: 8, fiber: 3, sugar: 2, sodium: 380, serving: '1 bowl (200ml)' },
+  'masala idli': { calories: 150, protein: 4, carbs: 28, fat: 3, fiber: 2, sugar: 1, sodium: 350, serving: '2 pieces' },
+  'paneer kadhai': { calories: 290, protein: 15, carbs: 10, fat: 22, fiber: 2, sugar: 3, sodium: 480, serving: '1 bowl (200ml)' },
+  'chicken curry': { calories: 260, protein: 24, carbs: 8, fat: 15, fiber: 1, sugar: 2, sodium: 480, serving: '1 bowl (200ml)' },
+  'mix veg paratha': { calories: 260, protein: 5, carbs: 38, fat: 10, fiber: 4, sugar: 1.5, sodium: 350, serving: '1 piece' },
+  'veg & chicken biryani': { calories: 420, protein: 26, carbs: 50, fat: 14, fiber: 2, sugar: 1.5, sodium: 600, serving: '1 plate' },
+  'peanut chutney': { calories: 90, protein: 4, carbs: 6, fat: 7, fiber: 2, sugar: 1, sodium: 180, serving: '2 tbsp' },
+  'banarasi lassi': { calories: 180, protein: 5, carbs: 28, fat: 5, fiber: 0, sugar: 24, sodium: 60, serving: '1 glass' },
+  'masala upma': { calories: 200, protein: 4, carbs: 32, fat: 6, fiber: 3, sugar: 2, sodium: 350, serving: '1 plate' },
+  'cabage aloo matar': { calories: 110, protein: 3, carbs: 16, fat: 4, fiber: 3, sugar: 3, sodium: 320, serving: '1 bowl' },
+  'sahi tukda': { calories: 250, protein: 5, carbs: 32, fat: 12, fiber: 0, sugar: 20, sodium: 100, serving: '1 piece' },
+  'palak dal': { calories: 140, protein: 8, carbs: 18, fat: 4, fiber: 4, sugar: 1.5, sodium: 350, serving: '1 bowl' },
+  'aloo parwal': { calories: 130, protein: 3, carbs: 18, fat: 5, fiber: 3, sugar: 2, sodium: 320, serving: '1 bowl' },
+  'rabrdi jalebi': { calories: 300, protein: 4, carbs: 54, fat: 8, fiber: 0, sugar: 40, sodium: 80, serving: '1 plate' },
+  'vadapav+chutney': { calories: 280, protein: 6, carbs: 38, fat: 12, fiber: 2, sugar: 2, sodium: 450, serving: '1 piece' },
+  'vadapav': { calories: 280, protein: 6, carbs: 38, fat: 12, fiber: 2, sugar: 2, sodium: 450, serving: '1 piece' },
+  'sprouts chat': { calories: 80, protein: 6, carbs: 12, fat: 1, fiber: 4, sugar: 2, sodium: 200, serving: '1 bowl' },
+  'palak paneer': { calories: 240, protein: 14, carbs: 8, fat: 18, fiber: 3, sugar: 2, sodium: 450, serving: '1 bowl (200ml)' },
+  'plane rice': { calories: 210, protein: 4, carbs: 46, fat: 0.5, fiber: 1, sugar: 0, sodium: 5, serving: '1 plate (150g)' },
+  'puri': { calories: 120, protein: 3, carbs: 14, fat: 6, fiber: 1, sugar: 0, sodium: 180, serving: '1 piece' },
+  'aloo chana sabji': { calories: 160, protein: 4, carbs: 22, fat: 6, fiber: 4, sugar: 2, sodium: 350, serving: '1 bowl' },
+  'soya chaap': { calories: 220, protein: 18, carbs: 12, fat: 12, fiber: 3, sugar: 1.5, sodium: 400, serving: '1 bowl' },
+  'dry manchurian': { calories: 200, protein: 5, carbs: 22, fat: 10, fiber: 2, sugar: 3, sodium: 600, serving: '1 bowl' },
+  'paneer lababdar': { calories: 320, protein: 14, carbs: 10, fat: 25, fiber: 2, sugar: 4, sodium: 520, serving: '1 bowl (200ml)' },
+  'aloo matar sabji': { calories: 140, protein: 3, carbs: 20, fat: 5, fiber: 3, sugar: 2.5, sodium: 350, serving: '1 bowl' },
+  'hydrabadi  chicken': { calories: 290, protein: 24, carbs: 8, fat: 18, fiber: 1, sugar: 2, sodium: 500, serving: '1 bowl (200ml)' },
+  'hydrabadi chicken': { calories: 290, protein: 24, carbs: 8, fat: 18, fiber: 1, sugar: 2, sodium: 500, serving: '1 bowl (200ml)' },
+  'chicken': { calories: 220, protein: 25, carbs: 2, fat: 12, fiber: 0, sugar: 0, sodium: 350, serving: '100g' },
+  'masala khichdi': { calories: 220, protein: 7, carbs: 36, fat: 5, fiber: 4, sugar: 1, sodium: 400, serving: '1 bowl' },
+  'aloo chokha': { calories: 120, protein: 2.5, carbs: 20, fat: 3, fiber: 3, sugar: 1, sodium: 250, serving: '1 bowl' },
+  'lehsun ki chutney': { calories: 45, protein: 1, carbs: 6, fat: 2, fiber: 1, sugar: 1, sodium: 250, serving: '2 tbsp' },
+  'red and green chutney': { calories: 20, protein: 0.5, carbs: 3, fat: 0.5, fiber: 1, sugar: 1, sodium: 180, serving: '2 tbsp' },
+  'red & green chutney': { calories: 20, protein: 0.5, carbs: 3, fat: 0.5, fiber: 1, sugar: 1, sodium: 180, serving: '2 tbsp' },
+  'rabdi': { calories: 220, protein: 6, carbs: 24, fat: 12, fiber: 0, sugar: 20, sodium: 60, serving: '1 small cup (100g)' },
+  'rabrdi': { calories: 220, protein: 6, carbs: 24, fat: 12, fiber: 0, sugar: 20, sodium: 60, serving: '1 small cup (100g)' },
+  'kheer/sewain': { calories: 190, protein: 5, carbs: 30, fat: 6, fiber: 0, sugar: 20, sodium: 50, serving: '1 bowl' },
+  'sahi tukda/kheer': { calories: 215, protein: 5, carbs: 30, fat: 9, fiber: 0, sugar: 20, sodium: 75, serving: '1 bowl' },
+  'uttapam / besan ka chilla': { calories: 180, protein: 6, carbs: 25, fat: 6, fiber: 2.5, sugar: 1, sodium: 300, serving: '1 piece' },
+  'soya chaap/paneer malai kofta': { calories: 280, protein: 14, carbs: 15, fat: 19, fiber: 2.5, sugar: 3.25, sodium: 460, serving: '1 bowl' },
+  'custard / sewai kheer': { calories: 175, protein: 4.5, carbs: 28, fat: 5, fiber: 0, sugar: 19, sodium: 65, serving: '1 bowl' },
+  'gajar halwa / rasgulla': { calories: 180, protein: 3.5, carbs: 28, fat: 6, fiber: 1, sugar: 22, sodium: 30, serving: '1 serving' },
+  'tea / coffee': { calories: 38, protein: 1, carbs: 5, fat: 1.25, fiber: 0, sugar: 4, sodium: 10, serving: '1 cup' },
 };
 
 // Nutrient cache to avoid repeat API calls
@@ -147,10 +219,11 @@ function findLocalMatch(key) {
   for (const [dbKey, val] of Object.entries(LOCAL_DB)) {
     if (key.includes(dbKey) || dbKey.includes(key)) return { ...val };
   }
-  // Word match
+  // Word match - exclude extremely generic words to avoid false matches on unrelated dishes
   const words = key.split(' ');
+  const genericWords = new Set(['aloo', 'paneer', 'chicken', 'roti', 'rice', 'jeera', 'chutney', 'dal', 'sambar', 'salad', 'pickle', 'raita', 'curd', 'kheer', 'gravy']);
   for (const [dbKey, val] of Object.entries(LOCAL_DB)) {
-    if (words.some(w => w.length > 3 && dbKey.includes(w))) return { ...val };
+    if (words.some(w => w.length > 3 && !genericWords.has(w) && dbKey.includes(w))) return { ...val };
   }
   return null;
 }

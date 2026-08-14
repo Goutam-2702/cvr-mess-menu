@@ -553,3 +553,142 @@
   position: relative;
   z-index: 99999 !important;
 }
+
+/* ═══ PDF EXPORT BUTTON & HEADER ══════════════════════════ */
+.menu-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid var(--border);
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+}
+.menu-card-header h2 {
+  border-bottom: none !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+.pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t);
+  box-shadow: var(--shadow-sm);
+  font-family: 'Inter', sans-serif;
+}
+.pdf-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px var(--accent-glow);
+}
+.pdf-icon {
+  font-size: 0.9rem;
+}
+
+/* ═══ PRINT STYLES ════════════════════════════════════════ */
+@media print {
+  /* Hide all interactive and layout wrappers not related to the menu card */
+  body > *:not(#menuOutput) {
+    display: none !important;
+  }
+  
+  #menuOutput {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .menu-card {
+    border: none !important;
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .menu-card-header {
+    border-bottom: 2px solid #000 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .menu-card-header h2 {
+    color: #000 !important;
+    font-size: 1.6rem !important;
+  }
+
+  .pdf-btn, .ni-actions, .favorite-btn, .rating-btn, .ni-qty-picker, .ni-qty-cal {
+    display: none !important;
+  }
+
+  .meal-row {
+    border-bottom: 1px solid #ddd !important;
+    padding: 14px 0 !important;
+    page-break-inside: avoid;
+    display: flex !important;
+    align-items: flex-start !important;
+  }
+
+  .meal-row:last-child {
+    border-bottom: none !important;
+  }
+
+  .meal-icon {
+    border: 1px solid #ccc !important;
+    border-radius: 6px !important;
+    background: #f9f9f9 !important;
+    color: #000 !important;
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.4rem !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .meal-label {
+    color: #555 !important;
+    font-size: 0.8rem !important;
+    font-weight: bold !important;
+  }
+
+  .meal-text {
+    color: #000 !important;
+    font-size: 1.05rem !important;
+  }
+
+  /* Make checkboxes cleaner in print (just list the items) */
+  .ni-item {
+    display: inline-block !important;
+    margin-right: 12px !important;
+    margin-bottom: 6px !important;
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .ni-checkbox {
+    display: none !important; /* Hide checkboxes in final PDF print */
+  }
+
+  .ni-text {
+    font-size: 1.05rem !important;
+    color: #000 !important;
+  }
+}
