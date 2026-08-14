@@ -490,17 +490,7 @@ window.updateDisplay = function() {
     ? `<div class="meal-row"><div class="meal-icon dessert">🍦</div><div class="meal-info"><div class="meal-label">Dessert</div><div class="meal-text">${menu.dessert}</div></div></div>`
     : "";
 
-  out.innerHTML = `
-    <div class="menu-card">
-      <div class="menu-card-header">
-        <h2><span class="day-emoji">${emoji}</span>${day}'s Menu</h2>
-        <button id="downloadPdfBtn" class="pdf-btn" aria-label="Export to PDF" onclick="window.print()">
-          <span class="pdf-icon">📄</span> Export PDF
-        </button>
-      </div>
-      ${rows}
-      ${dessert}
-    </div>`;
+  out.innerHTML = `<div class="menu-card"><h2><span class="day-emoji">${emoji}</span>${day}'s Menu</h2>${rows}${dessert}</div>`;
 
   // Publish state for new modules
   window.messApp.cachedMenuData = cachedMenuData;

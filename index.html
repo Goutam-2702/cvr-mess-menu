@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="logo.jpeg">
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="app-styles.css?v=2" />
+  <link rel="stylesheet" href="app-styles.css?v=9" />
 
   <!-- OneSignal -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -72,10 +72,15 @@
   </div>
   <h1>Mess Menu 🍽️</h1>
 
-  <select id="hostelSelect" aria-label="Select Hostel" class="hostel-dropdown" style="display: block; margin: 0 auto 15px auto; padding: 8px 16px; border-radius: 20px; border: 1px solid #ccc; background: #fff; color: #333; font-family: inherit; font-size: 14px; outline: none; font-weight: 600; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-    <option value="c v raman">C V Raman Hostel</option>
-    <option value="aryabhatt">Aryabhatt Hostel</option>
-  </select>
+  <div class="header-controls">
+    <select id="hostelSelect" aria-label="Select Hostel" class="hostel-dropdown" style="display: block; margin: 0; padding: 8px 16px; border-radius: 20px; border: 1px solid #ccc; background: #fff; color: #333; font-family: inherit; font-size: 14px; outline: none; font-weight: 600; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+      <option value="c v raman">C V Raman Hostel</option>
+      <option value="aryabhatt">Aryabhatt Hostel</option>
+    </select>
+    <button id="downloadPdfBtn" class="pdf-btn" aria-label="Export Full Weekly Menu to PDF">
+      <span class="pdf-icon">📄</span> Export Weekly PDF
+    </button>
+  </div>
 
   <!-- SEARCH BAR -->
   <div id="search-bar-root"></div>
@@ -264,8 +269,8 @@
     <a href="admin.html">Admin Panel</a>
   </footer>
 
-  <script type="module" src="script.js"></script>
-  <script type="module" src="app.js?v=8"></script>
+  <script type="module" src="script.js?v=9"></script>
+  <script type="module" src="app.js?v=9"></script>
   <!-- NEW FEATURE ROOTS -->
   <div id="profile-modal-root" style="position: relative; z-index: 99999;"></div>
   <div id="settings-panel-root" style="position: relative; z-index: 99999;"></div>

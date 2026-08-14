@@ -115,4 +115,98 @@ function initModules(profile) {
       window.listenToNotice();
     }
   });
+
+  // Export PDF click handler
+  const pdfBtn = document.getElementById('downloadPdfBtn');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', exportWeeklyMenuToPdf);
+  }
+}
+
+/* ─── EXPORT WEEKLY MENU TO PDF ──────────────────────────── */
+function exportWeeklyMenuToPdf() {
+  const app = window.messApp;
+  if (!app || !app.cachedMenuData) {
+    if (window.showToast) window.showToast('Menu data not loaded yet', 'warning');
+    return;
+  }
+
+  // Create temporary print container
+  const printArea = document.createElement('div');
+  printArea.id = 'weekly-print-area';
+
+  const hostelName = app.currentHostel === 'aryabhatt' ? 'Aryabhatt Hostel' : 'C V Raman Hostel';
+  
+  // Create beautiful print content
+  let html = `
+    <div class="print-weekly-header">
+      <div class="print-header-content">
+        <h1>🗓️ ${hostelName} - Weekly Mess Menu</h1>
+        <p class="print-subtitle">Generated on ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+      </div>
+    </div>
+    <div class="print-weekly-grid">
+  `;
+
+  // Render cards for all 7 days in order
+  const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+  dayOrder.forEach(day => {
+    const menu = app.cachedMenuData[day];
+    if (!menu) return;
+
+    html += `
+      <div class="print-day-card">
+        <h3>${day}</h3>
+        <div class="print-meal-list">
+          <div class="print-meal-item">
+            <span class="print-meal-lbl">🍳 Breakfast</span>
+            <span class="print-meal-txt">${menu.breakfast || '—'}</span>
+          </div>
+          <div class="print-meal-item">
+            <span class="print-meal-lbl">🍱 Lunch</span>
+            <span class="print-meal-txt">${menu.lunch || '—'}</span>
+          </div>
+          <div class="print-meal-item">
+            <span class="print-meal-lbl">☕ Snacks</span>
+            <span class="print-meal-txt">${menu.snacks || '—'}</span>
+          </div>
+          <div class="print-meal-item">
+            <span class="print-meal-lbl">🍛 Dinner</span>
+            <span class="print-meal-txt">${menu.dinner || '—'}</span>
+          </div>
+    `;
+
+    if (menu.dessert && menu.dessert !== '-' && menu.dessert !== '—') {
+      html += `
+          <div class="print-meal-item print-dessert-item">
+            <span class="print-meal-lbl">🍦 Dessert</span>
+            <span class="print-meal-txt">${menu.dessert}</span>
+          </div>
+      `;
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+    </div>
+    <div class="print-weekly-footer">
+      <p>Please note: Menu is subject to change based on ingredients availability. Timings apply as per official notifications.</p>
+    </div>
+  `;
+
+  printArea.innerHTML = html;
+  document.body.appendChild(printArea);
+
+  // Trigger print
+  window.print();
+
+  // Remove print area after print dialog closes
+  setTimeout(() => {
+    printArea.remove();
+  }, 1000);
 }
