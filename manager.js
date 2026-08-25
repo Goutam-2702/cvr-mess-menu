@@ -362,6 +362,7 @@ function renderBookingsTable() {
         <td>${b.snack}</td>
         <td>${b.quantity}</td>
         <td>₹${b.totalAmount}</td>
+        <td style="font-family:monospace;">${b.utrNumber || '—'}</td>
         <td><span class="status-badge ${paidClass}">${b.paymentStatus === 'PAID' ? '' : '⏳'} ${b.paymentStatus}</span></td>
         <td><span class="status-badge ${collectClass}">${b.collectionStatus === 'COLLECTED' ? '' : ''} ${b.collectionStatus}</span></td>
         <td>${fmtTime(b.createdAt)}</td>
@@ -503,6 +504,7 @@ function displayScanResult(booking) {
     <div class="sr-row"><span class="sr-label">Student</span><span class="sr-value">${booking.studentName}</span></div>
     <div class="sr-row"><span class="sr-label">Roll</span><span class="sr-value">${booking.rollNumber}</span></div>
     <div class="sr-row"><span class="sr-label">Hostel</span><span class="sr-value">${booking.hostel}</span></div>
+    <div class="sr-row"><span class="sr-label">UTR/Txn</span><span class="sr-value" style="font-family:monospace; font-weight:600; color:var(--text);">${booking.utrNumber || '—'}</span></div>
     <div class="sr-row"><span class="sr-label">Snack</span><span class="sr-value">${booking.snack}</span></div>
     <div class="sr-row"><span class="sr-label">Quantity</span><span class="sr-value">${booking.quantity}</span></div>
     <div class="sr-row"><span class="sr-label">Payment</span><span class="sr-value" style="color:var(--green);"> PAID</span></div>
