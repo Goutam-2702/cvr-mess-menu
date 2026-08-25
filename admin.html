@@ -158,12 +158,12 @@
 
 <!-- ── LOGIN ────────────────────────────────────────────────── -->
 <div id="loginSection">
-  <div class="login-logo">🔐</div>
+  <div class="login-logo"></div>
   <div class="login-title">CVR Mess Admin</div>
   <div class="login-sub">Secure panel for mess committee members only</div>
   <div class="login-row"><label for="email">Email Address</label><input id="email" type="email" placeholder="admin@example.com"></div>
   <div class="login-row"><label for="password">Password</label><input id="password" type="password" placeholder="Enter password"></div>
-  <button class="btn btn-primary" onclick="login()">🔓 Sign In</button>
+  <button class="btn btn-primary" onclick="login()"> 🔓 Sign In</button>
   <p style="margin-top:18px;font-size:.78rem;color:var(--text3)"><a href="index.html" style="color:var(--accent);font-weight:600">← Back to Mess Menu</a></p>
 </div>
 
@@ -182,12 +182,12 @@
         </div>
       </div>
       <div style="display:flex;gap:8px">
-        <a href="index.html" class="btn btn-sm" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--border);text-decoration:none;width:auto;margin-top:0">👁 View Site</a>
+        <a href="index.html" class="btn btn-sm" style="background:var(--surface);color:var(--accent);border:1.5px solid var(--border);text-decoration:none;width:auto;margin-top:0"> View Site</a>
         <button class="btn btn-red btn-sm" onclick="logout()" style="width:auto;margin-top:0">Sign Out</button>
       </div>
     </div>
 
-    <div id="saveStatus">✅ Saved and live!</div>
+    <div id="saveStatus">Saved and live!</div>
 
     <div class="stats-row">
       <div class="stat-card"><div class="stat-val">7</div><div class="stat-lbl">Days</div></div>
@@ -197,19 +197,19 @@
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active"   onclick="switchTab('menu',this)">🍽️ Menu</button>
-      <button class="tab-btn"          onclick="switchTab('notice',this)">📢 Notices</button>
-      <button class="tab-btn"          onclick="switchTab('gallery',this)">📸 Dish Gallery</button>
-      <button class="tab-btn"          onclick="switchTab('special',this)">⭐ Special Dinner</button>
-      <button class="tab-btn"          onclick="switchTab('timings',this)">🕒 Timings</button>
-      <button class="tab-btn"          onclick="switchTab('crowd',this)">📊 Crowd</button>
-      <button class="tab-btn"          onclick="switchTab('ratings',this)">📈 Ratings</button>
+      <button class="tab-btn active"   onclick="switchTab('menu',this)"> Menu</button>
+      <button class="tab-btn"          onclick="switchTab('notice',this)"> Notices</button>
+      <button class="tab-btn"          onclick="switchTab('gallery',this)"> Dish Gallery</button>
+      <button class="tab-btn"          onclick="switchTab('special',this)">⭐ Special 🍛 Dinner</button>
+      <button class="tab-btn"          onclick="switchTab('timings',this)"> Timings</button>
+      <button class="tab-btn"          onclick="switchTab('crowd',this)"> Crowd</button>
+      <button class="tab-btn"          onclick="switchTab('ratings',this)"> Ratings</button>
     </div>
 
     <!-- ── TAB: MENU ──────────────────────────────────────────── -->
     <div class="tab-panel active" id="tab-menu">
       <div class="card">
-        <div class="card-title">🍽️ Weekly Menu Editor</div>
+        <div class="card-title"> Weekly 🍽️ Menu Editor</div>
         <p style="font-size:.85rem;color:var(--text3);margin-bottom:16px">Select a day, update meals, and publish instantly to all students.</p>
         <div class="day-selector" id="daySelector">
           <button class="day-sel-btn active" data-day="Monday"    onclick="selDay('Monday',this)">Monday</button>
@@ -221,9 +221,9 @@
           <button class="day-sel-btn" data-day="Sunday"    onclick="selDay('Sunday',this)">Sunday</button>
         </div>
         <div id="menuEditorContent"></div>
-        <button class="btn btn-green" onclick="updateMenu()">💾 Save &amp; Publish Menu</button>
+        <button class="btn btn-green" onclick="updateMenu()"> 💾 Save &amp; Publish Menu</button>
         <div class="preview-box" id="menuPreviewBox" style="display:none">
-          <h4>📋 Live Preview</h4><div id="menuPreviewContent"></div>
+          <h4> Live Preview</h4><div id="menuPreviewContent"></div>
         </div>
       </div>
     </div>
@@ -231,7 +231,7 @@
     <!-- ── TAB: NOTICES ───────────────────────────────────────── -->
     <div class="tab-panel" id="tab-notice">
       <div class="card">
-        <div class="card-title">✏️ Post New Notice</div>
+        <div class="card-title"> ✏️ Post New Notice</div>
         <div class="form-row">
           <label for="noticeHostel">Target Hostel</label>
           <select id="noticeHostel" style="width:100%; padding: 10px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--border); background: var(--surface2); font-family: inherit; font-size: 0.9rem;">
@@ -243,7 +243,7 @@
         <div class="form-row"><label for="noticeTitle">Notice Title</label><input id="noticeTitle" placeholder="e.g. Special Meal Tomorrow" maxlength="80"></div>
         <div class="form-row"><label for="noticeContent">Message</label><textarea id="noticeContent" placeholder="Full notice text…" maxlength="500"></textarea><span style="font-size:.72rem;color:var(--text3);float:right;margin-top:4px" id="noticeCC">0/500</span></div>
         <div class="btn-group">
-          <button class="btn btn-purple" onclick="addNoticeToHistory()">📢 Post Notice</button>
+          <button class="btn btn-purple" onclick="addNoticeToHistory()"> Post Notice</button>
         </div>
       </div>
     </div>
@@ -251,7 +251,7 @@
     <!-- ── TAB: RATINGS ───────────────────────────────────────── -->
     <div class="tab-panel" id="tab-ratings">
       <div class="card">
-        <div class="card-title">📈 Dish Ratings</div>
+        <div class="card-title"> 📈 Dish Ratings</div>
         <p style="font-size:.85rem;color:var(--text3);margin-bottom:16px">View aggregated ratings submitted by students for each dish.</p>
         <div class="form-row">
           <label>Select Date</label>
@@ -266,19 +266,19 @@
     <!-- ── TAB: DISH GALLERY ──────────────────────────────────── -->
     <div class="tab-panel" id="tab-gallery">
       <div class="card">
-        <div class="card-title">📸 Add Dish Photo</div>
+        <div class="card-title"> 📸 Add Dish Photo</div>
         <p style="font-size:.85rem;color:var(--text3);margin-bottom:18px">Add food photos via upload or by pasting an external image link.</p>
 
         <!-- Toggle Mode -->
         <div style="display:flex;gap:8px;margin-bottom:18px">
-          <button class="btn btn-sm" id="modeUploadBtn" onclick="setGalleryMode('upload')" style="background:var(--accent);color:white">📁 Upload File</button>
-          <button class="btn btn-sm" id="modeLinkBtn" onclick="setGalleryMode('link')" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border)">🔗 Paste URL</button>
+          <button class="btn btn-sm" id="modeUploadBtn" onclick="setGalleryMode('upload')" style="background:var(--accent);color:white"> 📁 Upload File</button>
+          <button class="btn btn-sm" id="modeLinkBtn" onclick="setGalleryMode('link')" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border)"> 🔗 Paste URL</button>
         </div>
 
         <!-- Mode: Upload -->
         <div id="galleryUploadZone">
           <div class="upload-zone" id="uploadZone" onclick="document.getElementById('dishFile').click()">
-            <div class="uz-icon">📷</div>
+            <div class="uz-icon"></div>
             <div class="uz-text">Click to choose a photo</div>
             <div class="uz-sub">JPG, PNG, WEBP up to 5 MB</div>
             <input type="file" id="dishFile" accept="image/*" style="display:none" onchange="onDishFileSelect(event)">
@@ -310,20 +310,20 @@
             <label for="dishCategory">Category</label>
             <select id="dishCategory">
               <option value="">Select category…</option>
-              <option value="Breakfast">🍳 Breakfast</option>
-              <option value="Lunch">🍱 Lunch</option>
-              <option value="Snacks">☕ Snacks</option>
-              <option value="Dinner">🍛 Dinner</option>
-              <option value="Dessert">🍦 Dessert</option>
+              <option value="🍳 Breakfast"> 🍳 Breakfast</option>
+              <option value="🍱 Lunch"> 🍱 Lunch</option>
+              <option value="☕ Snacks"> ☕ Snacks</option>
+              <option value="🍛 Dinner"> 🍛 Dinner</option>
+              <option value="🍦 Dessert"> 🍦 Dessert</option>
             </select>
           </div>
         </div>
-        <button class="btn btn-purple" onclick="saveDish()" id="uploadBtn">💾 Save to Gallery</button>
+        <button class="btn btn-purple" onclick="saveDish()" id="uploadBtn"> 💾 Save to Gallery</button>
       </div>
 
       <!-- Gallery grid -->
       <div class="card">
-        <div class="card-title">🖼️ Current Gallery <span id="dishCountBadge" style="font-size:.75rem;font-weight:500;color:var(--text3);margin-left:4px"></span></div>
+        <div class="card-title"> Current Gallery <span id="dishCountBadge" style="font-size:.75rem;font-weight:500;color:var(--text3);margin-left:4px"></span></div>
         <div class="dish-admin-grid" id="adminDishGrid"><p style="color:var(--text3);font-size:.85rem">Loading…</p></div>
       </div>
     </div>
@@ -331,7 +331,7 @@
     <!-- ── TAB: SPECIAL DINNER ────────────────────────────────── -->
     <div class="tab-panel" id="tab-special">
       <div class="card">
-        <div class="card-title">⭐ Special Dinner / Event</div>
+        <div class="card-title">⭐ Special 🍛 Dinner / Event</div>
         <p style="font-size:.85rem;color:var(--text3);margin-bottom:18px">Announce a special dinner or event. It shows as a prominent banner on the main page.</p>
 
         <div class="toggle-row">
@@ -346,7 +346,7 @@
         </div>
 
         <div id="specialFields" style="margin-top:18px">
-          <div class="form-row"><label for="specialTitle">Event Title *</label><input id="specialTitle" placeholder="e.g. Biryani Night 🍚"></div>
+          <div class="form-row"><label for="specialTitle">Event Title *</label><input id="specialTitle" placeholder="e.g. Biryani Night "></div>
           <div class="form-row"><label for="specialDetails">Details</label><textarea id="specialDetails" placeholder="e.g. Special Biryani + Raita + Gulab Jamun served tonight!" rows="3"></textarea></div>
           <div class="form-grid-3">
             <div class="form-row"><label for="specialDate">Date</label><input id="specialDate" type="date"></div>
@@ -354,42 +354,42 @@
             <div class="form-row"><label for="specialMenu">Special Menu</label><input id="specialMenu" placeholder="e.g. Biryani, Raita, Gulab Jamun"></div>
           </div>
         </div>
-        <button class="btn btn-orange" onclick="saveSpecialEvent()">💾 Save Special Event</button>
-        <button class="btn btn-red" onclick="clearSpecialEvent()" style="margin-top:8px">🗑 Clear Event (Hide Banner)</button>
+        <button class="btn btn-orange" onclick="saveSpecialEvent()"> 💾 Save Special Event</button>
+        <button class="btn btn-red" onclick="clearSpecialEvent()" style="margin-top:8px"> Clear Event (Hide Banner)</button>
       </div>
     </div>
 
     <!-- ── TAB: TIMINGS ───────────────────────────────────────── -->
     <div class="tab-panel" id="tab-timings">
       <div class="card">
-        <div class="card-title">🕒 Mess Timing Settings</div>
+        <div class="card-title"> 🕒 Mess Timing Settings</div>
         <p style="font-size:.85rem;color:var(--text3);margin-bottom:20px">Update official timings. Changes reflect on the student page instantly.</p>
         <div style="margin-bottom:20px">
           <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:14px">Weekday (Mon–Fri)</div>
           <div class="form-grid-2">
-            <div class="form-row"><label>Breakfast</label><input id="wd_b" placeholder="7:30 AM – 9:30 AM"></div>
-            <div class="form-row"><label>Lunch</label><input id="wd_l" placeholder="12:30 PM – 2:30 PM"></div>
-            <div class="form-row"><label>Snacks</label><input id="wd_s" placeholder="5:30 PM – 6:30 PM"></div>
-            <div class="form-row"><label>Dinner</label><input id="wd_d" placeholder="8:00 PM – 10:00 PM"></div>
+            <div class="form-row"><label>🍳 Breakfast</label><input id="wd_b" placeholder="7:30 AM – 9:30 AM"></div>
+            <div class="form-row"><label>🍱 Lunch</label><input id="wd_l" placeholder="12:30 PM – 2:30 PM"></div>
+            <div class="form-row"><label>☕ Snacks</label><input id="wd_s" placeholder="5:30 PM – 6:30 PM"></div>
+            <div class="form-row"><label>🍛 Dinner</label><input id="wd_d" placeholder="8:00 PM – 10:00 PM"></div>
           </div>
         </div>
         <div style="margin-bottom:20px">
           <div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:14px">Weekend (Sat–Sun)</div>
           <div class="form-grid-2">
-            <div class="form-row"><label>Breakfast</label><input id="we_b" placeholder="8:00 AM – 10:00 AM"></div>
-            <div class="form-row"><label>Lunch</label><input id="we_l" placeholder="1:00 PM – 3:00 PM"></div>
-            <div class="form-row"><label>Snacks</label><input id="we_s" placeholder="5:30 PM – 6:30 PM"></div>
-            <div class="form-row"><label>Dinner</label><input id="we_d" placeholder="8:00 PM – 10:00 PM"></div>
+            <div class="form-row"><label>🍳 Breakfast</label><input id="we_b" placeholder="8:00 AM – 10:00 AM"></div>
+            <div class="form-row"><label>🍱 Lunch</label><input id="we_l" placeholder="1:00 PM – 3:00 PM"></div>
+            <div class="form-row"><label>☕ Snacks</label><input id="we_s" placeholder="5:30 PM – 6:30 PM"></div>
+            <div class="form-row"><label>🍛 Dinner</label><input id="we_d" placeholder="8:00 PM – 10:00 PM"></div>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="saveTimings()">💾 Save Timings</button>
+        <button class="btn btn-primary" onclick="saveTimings()"> 💾 Save Timings</button>
       </div>
     </div>
     
     <!-- ── TAB: CROWD ─────────────────────────────────────────── -->
     <div class="tab-panel" id="tab-crowd">
       <div class="card">
-        <div class="card-title">📊 Crowd Control</div>
+        <div class="card-title"> 📊 Crowd Control</div>
         <div style="margin-bottom:16px;">
           <label>Current Status</label>
           <div id="adminCrowdStatus" style="padding:10px; background:var(--surface2); border-radius:var(--r-sm); margin-top:6px; color:var(--text2)">Loading...</div>
@@ -397,20 +397,20 @@
         <div class="form-row">
           <label>Select Meal</label>
           <select id="crowdMealSelect">
-            <option value="breakfast">🍳 Breakfast</option>
-            <option value="lunch">🍱 Lunch</option>
-            <option value="dinner">🍛 Dinner</option>
+            <option value="breakfast"> 🍳 Breakfast</option>
+            <option value="lunch"> 🍱 Lunch</option>
+            <option value="dinner"> 🍛 Dinner</option>
           </select>
         </div>
         <div class="form-row">
           <label>Update Level</label>
           <select id="crowdLevelSelect">
-            <option value="low">🟢 Low</option>
-            <option value="medium">🟡 Medium</option>
-            <option value="high">🔴 High</option>
+            <option value="low"> 🟢 Low</option>
+            <option value="medium"> 🟡 Medium</option>
+            <option value="high"> 🔴 High</option>
           </select>
         </div>
-        <button class="btn btn-primary" onclick="adminSetCrowd()">💾 Update Crowd Level</button>
+        <button class="btn btn-primary" onclick="adminSetCrowd()"> Update Crowd Level</button>
         <button class="btn btn-sm" onclick="adminClearCrowd()" style="margin-top:10px; background:var(--surface2); color:var(--text2); border:1px solid var(--border);">Reset All to Estimated</button>
       </div>
     </div>
@@ -519,7 +519,7 @@ window.fetchAdminRatings = async () => {
           <div style="font-size:0.75rem;color:var(--text3);text-transform:capitalize;">${s.meal}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-weight:700;color:var(--yellow);font-size:1.1rem;">★ ${avg}</div>
+          <div style="font-weight:700;color:var(--yellow);font-size:1.1rem;"> ${avg}</div>
           <div style="font-size:0.75rem;color:var(--text3);">${s.count} ratings</div>
         </div>
       </div>`;
@@ -542,7 +542,7 @@ window.onAdminHostelChange = async () => {
   if (document.getElementById("tab-ratings")?.classList.contains("active")) {
     fetchAdminRatings();
   }
-  showSaved("✅ Switched to " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman"));
+  showSaved(" Switched to " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman"));
 };
 
 window.login = async () => {
@@ -581,12 +581,12 @@ function buildMenuEditor(day) {
   document.getElementById("menuEditorContent").innerHTML = `
     <h3 style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:14px">Editing: <span style="color:var(--accent)">${day}</span></h3>
     <div class="form-grid-2">
-      <div class="form-row"><label>🍳 Breakfast</label><input id="f_b" placeholder="e.g. Aloo Paratha, Chutney" oninput="updatePreview()"></div>
-      <div class="form-row"><label>🍱 Lunch</label><input id="f_l" placeholder="e.g. Dal, Rice, Sabzi, Roti" oninput="updatePreview()"></div>
-      <div class="form-row"><label>☕ Snacks</label><input id="f_s" placeholder="e.g. Samosa, Tea" oninput="updatePreview()"></div>
-      <div class="form-row"><label>🍛 Dinner</label><input id="f_d" placeholder="e.g. Paneer, Dal, Rice, Roti" oninput="updatePreview()"></div>
+      <div class="form-row"><label> 🍳 Breakfast</label><input id="f_b" placeholder="e.g. Aloo Paratha, Chutney" oninput="updatePreview()"></div>
+      <div class="form-row"><label> 🍱 Lunch</label><input id="f_l" placeholder="e.g. Dal, Rice, Sabzi, Roti" oninput="updatePreview()"></div>
+      <div class="form-row"><label> ☕ Snacks</label><input id="f_s" placeholder="e.g. Samosa, Tea" oninput="updatePreview()"></div>
+      <div class="form-row"><label> 🍛 Dinner</label><input id="f_d" placeholder="e.g. Paneer, Dal, Rice, Roti" oninput="updatePreview()"></div>
     </div>
-    <div class="form-row"><label>🍦 Dessert <span style="font-weight:400;text-transform:none">(optional)</span></label><input id="f_ds" placeholder="e.g. Gulab Jamun" oninput="updatePreview()"></div>`;
+    <div class="form-row"><label> 🍦 Dessert <span style="font-weight:400;text-transform:none">(optional)</span></label><input id="f_ds" placeholder="e.g. Gulab Jamun" oninput="updatePreview()"></div>`;
 }
 
 async function loadMenuFromFirebase() {
@@ -605,7 +605,7 @@ function populateDayFields(day) {
 
 window.updateMenu = async () => {
   const b=gv("f_b"),l=gv("f_l"),s=gv("f_s"),d=gv("f_d"),ds=gv("f_ds");
-  if (!b||!l||!d) { alert("Fill Breakfast, Lunch, and Dinner before saving."); return; }
+  if (!b||!l||!d) { alert("Fill 🍳 Breakfast, 🍱 Lunch, and 🍛 Dinner before saving."); return; }
   const update = {
     [`${currentDay}_breakfast`]:b, [`${currentDay}_lunch`]:l,
     [`${currentDay}_snacks`]:s||"", [`${currentDay}_dinner`]:d,
@@ -622,7 +622,7 @@ window.updatePreview = () => {
   if(!bx||!ct) return;
   if(!b&&!l&&!s&&!d) { bx.style.display="none"; return; }
   bx.style.display="block";
-  ct.innerHTML=`<div class="preview-row"><span class="preview-label">🍳 Breakfast</span><span>${b||"—"}</span></div><div class="preview-row"><span class="preview-label">🍱 Lunch</span><span>${l||"—"}</span></div><div class="preview-row"><span class="preview-label">☕ Snacks</span><span>${s||"—"}</span></div><div class="preview-row"><span class="preview-label">🍛 Dinner</span><span>${d||"—"}</span></div>${ds?`<div class="preview-row"><span class="preview-label">🍦 Dessert</span><span>${ds}</span></div>`:""}`;
+  ct.innerHTML=`<div class="preview-row"><span class="preview-label"> 🍳 Breakfast</span><span>${b||"—"}</span></div><div class="preview-row"><span class="preview-label"> 🍱 Lunch</span><span>${l||"—"}</span></div><div class="preview-row"><span class="preview-label"> ☕ Snacks</span><span>${s||"—"}</span></div><div class="preview-row"><span class="preview-label"> 🍛 Dinner</span><span>${d||"—"}</span></div>${ds?`<div class="preview-row"><span class="preview-label"> 🍦 Dessert</span><span>${ds}</span></div>`:""}`;
 };
 
 /* NOTICES */
@@ -633,7 +633,7 @@ window.addNoticeToHistory = async () => {
   try {
     await addDoc(collection(db,"notices"),{title:t,content:c,hostel:h,createdAt:serverTimestamp()});
     document.getElementById("noticeTitle").value=""; document.getElementById("noticeContent").value=""; document.getElementById("noticeCC").textContent="0/500";
-    showSaved("✅ Notice added to history!");
+    showSaved(" Notice added to history!");
   } catch(e) { alert(e.message); }
 };
 let noticesUnsubscribe = null;
@@ -658,12 +658,12 @@ function listenNotices() {
       let date="";
       if(data.createdAt?.toDate) date=data.createdAt.toDate().toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
       const hBadge = data.hostel === 'all' ? '<span style="font-size:0.7rem;color:var(--text3);border:1px solid var(--border);padding:2px 6px;border-radius:10px;">All Hostels</span>' : `<span style="font-size:0.7rem;color:var(--accent);border:1px solid var(--accent);padding:2px 6px;border-radius:10px;background:var(--accent-glow)">${data.hostel}</span>`;
-      return `<div class="notice-item"><div class="nc"><div class="ntitle">${san(data.title)} ${hBadge}</div><div class="nbody">${san(data.content)}</div>${date?`<div class="nmeta">📅 ${date}</div>`:""}</div><button class="del-btn" onclick="delNotice('${d.id}')">🗑 Delete</button></div>`;
+      return `<div class="notice-item"><div class="nc"><div class="ntitle">${san(data.title)} ${hBadge}</div><div class="nbody">${san(data.content)}</div>${date?`<div class="nmeta"> ${date}</div>`:""}</div><button class="del-btn" onclick="delNotice('${d.id}')"> 🗑 Delete</button></div>`;
     }).join("");
   });
 }
 window.delNotice = async id => {
-  if(!confirm("Delete this notice?")) return;
+  if(!confirm("🗑 Delete this notice?")) return;
   try { await deleteDoc(doc(db,"notices",id)); } catch(e) { alert(e.message); }
 };
 
@@ -731,7 +731,7 @@ async function addDishToFirestore(name, category, url, storagePath) {
       storagePath: storagePath || "",
       uploadedAt: serverTimestamp()
     });
-    showSaved("✅ Photo added to gallery!");
+    showSaved(" Photo added to gallery!");
     document.getElementById("dishName").value = "";
     document.getElementById("dishCategory").value = "";
     document.getElementById("dishFile").value = "";
@@ -766,20 +766,20 @@ async function uploadDishFile(name, cat) {
       err => {
         console.error("Storage Upload Error:", err);
         alert(`Upload failed!\nError: ${err.message}\nCode: ${err.code}\n\nTIP: If you are on the Spark plan, try using the 'Link URL' mode instead!`);
-        btn.disabled = false; btn.textContent = "💾 Save to Gallery";
+        btn.disabled = false; btn.textContent = " 💾 Save to Gallery";
         progressWrap.style.display = "none";
       },
       async () => {
         const url = await getDownloadURL(task.snapshot.ref);
         await addDishToFirestore(name, cat, url, filename);
-        btn.disabled = false; btn.textContent = "💾 Save to Gallery";
+        btn.disabled = false; btn.textContent = " 💾 Save to Gallery";
         progressWrap.style.display = "none";
         fill.style.width = "0%";
       }
     );
   } catch(e) {
     alert("Error: " + e.message);
-    btn.disabled = false; btn.textContent = "💾 Save to Gallery";
+    btn.disabled = false; btn.textContent = " 💾 Save to Gallery";
     progressWrap.style.display = "none";
   }
 }
@@ -815,21 +815,21 @@ function renderAdminDishes(snap) {
   }
   grid.innerHTML = adminDishes.map(d => `
     <div class="dish-admin-card">
-      <img src="${d.url}" alt="${san(d.name)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2275%22><rect width=%22100%22 height=%2275%22 fill=%22%23eee%22/><text x=%2250%25%22 y=%2250%25%22 dy=%22.3em%22 text-anchor=%22middle%22>🖼️</text></svg>'">
-      <button class="dish-del-overlay" onclick="delDish('${d.id}','${d.storagePath||""}')" title="Delete">🗑</button>
+      <img src="${d.url}" alt="${san(d.name)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2275%22><rect width=%22100%22 height=%2275%22 fill=%22%23eee%22/><text x=%2250%25%22 y=%2250%25%22 dy=%22.3em%22 text-anchor=%22middle%22></text></svg>'">
+      <button class="dish-del-overlay" onclick="delDish('${d.id}','${d.storagePath||""}')" title="🗑 Delete"></button>
       <div class="dname">${san(d.name)}</div>
       ${d.category ? `<div class="dcat">${san(d.category)}</div>` : ""}
     </div>`).join("");
 }
 
 window.delDish = async (id, storagePath) => {
-  if (!confirm("Delete this photo permanently?")) return;
+  if (!confirm("🗑 Delete this photo permanently?")) return;
   try {
     await deleteDoc(doc(db,"dishes_" + currentAdminHostel,id));
     if (storagePath) {
       try { await deleteObject(ref(storage, storagePath)); } catch(_) {}
     }
-    showSaved("🗑 Photo deleted.");
+    showSaved(" Photo deleted.");
   } catch(e) { alert(e.message); }
 };
 
@@ -858,7 +858,7 @@ window.saveSpecialEvent = async () => {
   if (active && !title) { alert("Enter an event title."); return; }
   try {
     await setDoc(doc(db,"settings","specialEvent"),{active,title,details,date,time,menu,updatedAt:serverTimestamp()});
-    showSaved(active ? "⭐ Special event is now live!" : "✅ Banner hidden from students.");
+    showSaved(active ? "⭐ Special event is now live!" : " Banner hidden from students.");
   } catch(e) { alert(e.message); }
 };
 
@@ -867,7 +867,7 @@ window.clearSpecialEvent = async () => {
   try {
     await setDoc(doc(db,"settings","specialEvent"),{active:false,updatedAt:serverTimestamp()},{merge:true});
     document.getElementById("specialActive").checked = false;
-    showSaved("🗑 Special event cleared.");
+    showSaved(" Special event cleared.");
   } catch(e) { alert(e.message); }
 };
 
@@ -895,14 +895,14 @@ window.saveTimings = async () => {
       weekend_breakfast:gv("we_b"),weekend_lunch:gv("we_l"),weekend_snacks:gv("we_s"),weekend_dinner:gv("we_d"),
       updatedAt:serverTimestamp()
     });
-    showSaved("✅ Timings updated live for " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman") + "!");
+    showSaved(" Timings updated live for " + (currentAdminHostel === "aryabhatt" ? "Aryabhatt" : "C V Raman") + "!");
   } catch(e) { alert(e.message); }
 };
 
 /* HELPERS */
 function gv(id) { return document.getElementById(id)?.value.trim()||""; }
 function san(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-function showSaved(msg="✅ Saved and live!") {
+function showSaved(msg="Saved and live!") {
   const el=document.getElementById("saveStatus"); if(!el) return;
   el.textContent=msg; el.style.display="flex";
   clearTimeout(el._t); el._t=setTimeout(()=>el.style.display="none",3500);
@@ -925,9 +925,9 @@ window.listenToCrowdAdmin = function() {
       const l = d.lunch || 'Estimated';
       const din = d.dinner || 'Estimated';
       st.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Breakfast:</span> <b style="text-transform:capitalize">${b}</b></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Lunch:</span> <b style="text-transform:capitalize">${l}</b></div>
-        <div style="display:flex; justify-content:space-between;"><span>Dinner:</span> <b style="text-transform:capitalize">${din}</b></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>🍳 Breakfast:</span> <b style="text-transform:capitalize">${b}</b></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>🍱 Lunch:</span> <b style="text-transform:capitalize">${l}</b></div>
+        <div style="display:flex; justify-content:space-between;"><span>🍛 Dinner:</span> <b style="text-transform:capitalize">${din}</b></div>
         <div style="font-size:0.75rem; color:var(--text3); margin-top:8px; border-top:1px solid var(--border); padding-top:6px;">Last updated: ${d.updatedAt ? new Date(d.updatedAt.toMillis ? d.updatedAt.toMillis() : d.updatedAt).toLocaleString() : 'N/A'} (by ${d.updatedBy || 'N/A'})</div>
       `;
     } else {

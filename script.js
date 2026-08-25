@@ -218,7 +218,7 @@ function listenToMenu() {
 
   menuUnsubscribe = onSnapshot(doc(db, "menu", currentHostel), (snap) => {
     if (!snap.exists()) {
-      if (out) out.innerHTML = "<div class='menu-card'><p style='text-align:center;color:var(--text3)'>❌ Menu not found</p></div>";
+      if (out) out.innerHTML = "<div class='menu-card'><p style='text-align:center;color:var(--text3)'> Menu not found</p></div>";
       return;
     }
     const d = snap.data();
@@ -234,7 +234,7 @@ function listenToMenu() {
     
     const currentMenuStr = JSON.stringify(cachedMenuData);
     if (!isFirstMenu && previousMenuStr && previousMenuStr !== currentMenuStr) {
-      showToast("🍽️ Menu updated live!", "success");
+      showToast(" Menu updated live!", "success");
     }
     previousMenuStr = currentMenuStr;
     isFirstMenu = false;
@@ -242,7 +242,7 @@ function listenToMenu() {
     updateDisplay();
   }, err => {
     console.error("Menu error:", err);
-    if (out) out.innerHTML = "<div class='menu-card'><p style='text-align:center;color:var(--text3)'>⚠️ Could not load menu</p></div>";
+    if (out) out.innerHTML = "<div class='menu-card'><p style='text-align:center;color:var(--text3)'> Could not load menu</p></div>";
   });
 }
 
@@ -283,7 +283,7 @@ function listenToNotice() {
     
     const currentNoticeStr = latestNotice.title + latestNotice.content;
     if (!isFirstNotice && previousNoticeStr && previousNoticeStr !== currentNoticeStr) {
-      showToast("📢 New notice posted!", "warning");
+      showToast(" New notice posted!", "warning");
     }
     previousNoticeStr = currentNoticeStr;
     isFirstNotice = false;
@@ -359,7 +359,7 @@ function listenToGallery() {
     }, err2 => {
       console.error("Gallery error:", err2);
       const grid = document.getElementById("dishGrid");
-      if (grid) grid.innerHTML = "<div class='gallery-empty'>📸 No photos yet — check back soon!</div>";
+      if (grid) grid.innerHTML = "<div class='gallery-empty'> No photos yet — check back soon!</div>";
     });
   });
 }
@@ -372,7 +372,7 @@ function renderGallery() {
   if (count) count.textContent = cachedDishes.length > 0 ? `${cachedDishes.length} photos` : "0 photos";
 
   if (cachedDishes.length === 0) {
-    grid.innerHTML = "<div class='gallery-empty'>📸 No dish photos uploaded yet.<br>Admin can add them in the panel!</div>";
+    grid.innerHTML = "<div class='gallery-empty'> No dish photos uploaded yet.<br>Admin can add them in the panel!</div>";
     return;
   }
 
@@ -427,7 +427,7 @@ function listenToSpecialEvent() {
     cachedSpecial = d;
     document.getElementById("seTitle").textContent   = d.title   || "Special Event";
     document.getElementById("seDetails").textContent = d.details || "";
-    document.getElementById("seTime").textContent    = d.time    ? `🕒 ${d.time}` : "🕒 Check timings";
+    document.getElementById("seTime").textContent    = d.time    ? ` ${d.time}` : " Check timings";
     banner.classList.add("active");
 
     const currentSpecialStr = d.title + (d.details || "");
@@ -440,7 +440,7 @@ function listenToSpecialEvent() {
 }
 
 /* ─── DISPLAY MENU ────────────────────────────────────────── */
-const DAY_EMOJIS = { Monday:"🌱",Tuesday:"✨",Wednesday:"🌤️",Thursday:"🍀",Friday:"🎉",Saturday:"🌟",Sunday:"☀️" };
+const DAY_EMOJIS = { Monday:"",Tuesday:"",Wednesday:"",Thursday:"",Friday:"",Saturday:"",Sunday:"" };
 
 window.updateDisplay = function() {
   const out = document.getElementById("menuOutput");
@@ -452,7 +452,7 @@ window.updateDisplay = function() {
   const timing = getActiveTimings(day);  // Uses live Firebase timings if available
 
   const tt = document.getElementById("timingTitle");
-  if (tt) tt.textContent = isWE ? `🕒 Weekend Timings (${day})` : "🕒 Weekday Timings (Mon – Fri)";
+  if (tt) tt.textContent = isWE ? ` Weekend Timings (${day})` : " Weekday Timings (Mon – Fri)";
   const timingIds = ["bt", "lt", "st", "dt"];
   const timingKeys = ["breakfast", "lunch", "snacks", "dinner"];
   timingIds.forEach((id, i) => {
@@ -467,12 +467,12 @@ window.updateDisplay = function() {
   }
 
   const cur  = getCurrentMeal();
-  const emoji = DAY_EMOJIS[day] || "📋";
+  const emoji = DAY_EMOJIS[day] || "";
   const meals = [
-    { key:"breakfast", label:"Breakfast", icon:"🍳", cls:"breakfast" },
-    { key:"lunch",     label:"Lunch",     icon:"🍱", cls:"lunch" },
-    { key:"snacks",    label:"Snacks",    icon:"☕", cls:"snacks" },
-    { key:"dinner",    label:"Dinner",    icon:"🍛", cls:"dinner" },
+    { key:"breakfast", label:"🍳 Breakfast", icon:"", cls:"breakfast" },
+    { key:"lunch",     label:"🍱 Lunch",     icon:"", cls:"lunch" },
+    { key:"snacks",    label:"☕ Snacks",    icon:"", cls:"snacks" },
+    { key:"dinner",    label:"🍛 Dinner",    icon:"", cls:"dinner" },
   ];
 
   const rows = meals.map(m => {
@@ -480,14 +480,14 @@ window.updateDisplay = function() {
     return `<div class="meal-row ${isNow}">
       <div class="meal-icon ${m.cls}">${m.icon}</div>
       <div class="meal-info">
-        <div class="meal-label">${m.label}${isNow ? " · Now Serving 🔴" : ""}</div>
+        <div class="meal-label">${m.label}${isNow ? " · Now Serving " : ""}</div>
         <div class="meal-text">${menu[m.key] || "—"}</div>
       </div>
     </div>`;
   }).join("");
 
   const dessert = menu.dessert && menu.dessert !== "-" && menu.dessert !== "—"
-    ? `<div class="meal-row"><div class="meal-icon dessert">🍦</div><div class="meal-info"><div class="meal-label">Dessert</div><div class="meal-text">${menu.dessert}</div></div></div>`
+    ? `<div class="meal-row"><div class="meal-icon dessert"></div><div class="meal-info"><div class="meal-label">🍦 Dessert</div><div class="meal-text">${menu.dessert}</div></div></div>`
     : "";
 
   out.innerHTML = `<div class="menu-card"><h2><span class="day-emoji">${emoji}</span>${day}'s Menu</h2>${rows}${dessert}</div>`;
@@ -599,10 +599,10 @@ window.sendQuick = function(text) {
 window.showToast = function(msg, type = "info") {
   const c = document.getElementById("toast-container");
   if (!c) return;
-  const icons = { info:"ℹ️", success:"✅", warning:"⚠️" };
+  const icons = { info:"ℹ", success:"", warning:"" };
   const t = document.createElement("div");
   t.className = `toast ${type}`;
-  t.innerHTML = `<span class="toast-icon">${icons[type]||"ℹ️"}</span><span>${msg}</span>`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]||"ℹ"}</span><span>${msg}</span>`;
   c.appendChild(t);
   setTimeout(() => {
     t.style.animation = "toast-out .3s ease forwards";
@@ -624,12 +624,12 @@ window.handleChat = function() {
   cont.scrollTop = cont.scrollHeight;
 
   const tid = "t-" + Date.now();
-  cont.innerHTML += `<div class="bot-msg typing-indicator" id="${tid}"><div class="bot-icon">🤖</div><span><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span></div>`;
+  cont.innerHTML += `<div class="bot-msg typing-indicator" id="${tid}"><div class="bot-icon"></div><span><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span></div>`;
   cont.scrollTop = cont.scrollHeight;
 
   setTimeout(() => {
     document.getElementById(tid)?.remove();
-    cont.innerHTML += `<div class="bot-msg"><div class="bot-icon">🤖</div><span>${generateBotResponse(text, raw)}</span></div>`;
+    cont.innerHTML += `<div class="bot-msg"><div class="bot-icon"></div><span>${generateBotResponse(text, raw)}</span></div>`;
     cont.scrollTop = cont.scrollHeight;
   }, 600 + Math.random() * 400);
 };
@@ -642,14 +642,14 @@ function generateBotResponse(text, raw) {
   // Greetings
   if (/^(hi|hello|hey|namaste|good\s*(morning|afternoon|evening|night))/i.test(text)) {
     const g = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-    return `${g}! 😊 I'm your CVR Mess Assistant. Ask me about today's menu, timings, special events, dish photos, or how to complain!`;
+    return `${g}!  I'm your CVR Mess Assistant. Ask me about today's menu, timings, special events, dish photos, or how to complain!`;
   }
 
   // Gallery / photos
   if (/photo|gallery|picture|image|dish photo|food photo/i.test(text)) {
     return cachedDishes.length > 0
-      ? `📸 We have <b>${cachedDishes.length} dish photos</b> in our gallery! Tap the <b>📸 Dish Photos</b> button (bottom-right ＋ menu) or scroll down to see them!`
-      : "📸 No dish photos uploaded yet. The admin can add them through the Admin Panel!";
+      ? ` We have <b>${cachedDishes.length} dish photos</b> in our gallery! Tap the <b> Dish Photos</b> button (bottom-right ＋ menu) or scroll down to see them!`
+      : " No dish photos uploaded yet. The admin can add them through the Admin Panel!";
   }
 
   // Special event / special dinner
@@ -657,16 +657,16 @@ function generateBotResponse(text, raw) {
     if (cachedSpecial && cachedSpecial.active) {
       return `⭐ <b>Special Event Tonight!</b><br>${cachedSpecial.title}<br>${cachedSpecial.details || ""}<br><b>Time:</b> ${cachedSpecial.time || "Check timings"}`;
     }
-    const specials = { Friday:"Biryani or Paneer 🎉", Sunday:"Biryani & Shahi Tukda ☀️", Thursday:"Gajar Halwa / Rasgulla 🍮" };
+    const specials = { Friday:"Biryani or Paneer ", Sunday:"Biryani & Shahi Tukda ", Thursday:"Gajar Halwa / Rasgulla " };
     return specials[day]
       ? `Today (${day}) usually has ${specials[day]}! No special event is announced for tonight. Check the notice board for updates!`
-      : "No special dinner is announced right now. Keep an eye on the live notice board! 👀";
+      : "No special dinner is announced right now. Keep an eye on the live notice board! ";
   }
 
   // Full today's menu
   if ((text.includes("today") && text.includes("menu")) || text.includes("full menu") || text.includes("all meal")) {
     if (!menu) return "Menu is loading… try again in a moment! ⏳";
-    return `📋 <b>${day}'s Full Menu:</b><br>🍳 Breakfast: ${menu.breakfast}<br>🍱 Lunch: ${menu.lunch}<br>☕ Snacks: ${menu.snacks}<br>🍛 Dinner: ${menu.dinner}${menu.dessert && menu.dessert !== "-" ? `<br>🍦 Dessert: ${menu.dessert}` : ""}`;
+    return ` <b>${day}'s Full Menu:</b><br> 🍳 Breakfast: ${menu.breakfast}<br> 🍱 Lunch: ${menu.lunch}<br> ☕ Snacks: ${menu.snacks}<br> 🍛 Dinner: ${menu.dinner}${menu.dessert && menu.dessert !== "-" ? `<br> 🍦 Dessert: ${menu.dessert}` : ""}`;
   }
 
   // Specific day
@@ -674,48 +674,48 @@ function generateBotResponse(text, raw) {
     if (text.includes(d.toLowerCase())) {
       const dm = cachedMenuData[d];
       if (!dm) return `Menu for ${d} isn't set yet.`;
-      return `📋 <b>${d}:</b><br>🍳 ${dm.breakfast}<br>🍱 ${dm.lunch}<br>☕ ${dm.snacks}<br>🍛 ${dm.dinner}${dm.dessert && dm.dessert !== "-" ? `<br>🍦 ${dm.dessert}` : ""}`;
+      return ` <b>${d}:</b><br> ${dm.breakfast}<br> ${dm.lunch}<br> ${dm.snacks}<br> ${dm.dinner}${dm.dessert && dm.dessert !== "-" ? `<br> ${dm.dessert}` : ""}`;
     }
   }
 
   // What's serving now
   if (/now|current|serving/i.test(text)) {
     const cm = getCurrentMeal();
-    if (!cm) return "The mess is between service times right now 😅. Check the timings on the main page!";
-    return menu ? `Currently serving <b>${cm}</b>: ${menu[cm]} 🍽️` : "Menu is still loading ⏳";
+    if (!cm) return "The mess is between service times right now . Check the timings on the main page!";
+    return menu ? `Currently serving <b>${cm}</b>: ${menu[cm]} ` : "Menu is still loading ⏳";
   }
 
   // Per-meal
-  if (text.includes("breakfast")) { const m = cachedMenuData[getDayFromText(text)||day]; return m ? `🍳 <b>Breakfast:</b> ${m.breakfast}` : "Menu loading ⏳"; }
-  if (text.includes("lunch"))     { const m = cachedMenuData[getDayFromText(text)||day]; return m ? `🍱 <b>Lunch:</b> ${m.lunch}` : "Menu loading ⏳"; }
-  if (/snack|tea|coffee|evening/i.test(text)) { const m = cachedMenuData[getDayFromText(text)||day]; return m ? `☕ <b>Snacks:</b> ${m.snacks}` : "Menu loading ⏳"; }
-  if (/dinner|supper/i.test(text)) { const m = cachedMenuData[getDayFromText(text)||day]; return m ? `🍛 <b>Dinner:</b> ${m.dinner}` : "Menu loading ⏳"; }
+  if (text.includes("breakfast")) { const m = cachedMenuData[getDayFromText(text)||day]; return m ? ` <b>🍳 Breakfast:</b> ${m.breakfast}` : "Menu loading ⏳"; }
+  if (text.includes("lunch"))     { const m = cachedMenuData[getDayFromText(text)||day]; return m ? ` <b>🍱 Lunch:</b> ${m.lunch}` : "Menu loading ⏳"; }
+  if (/snack|tea|coffee|evening/i.test(text)) { const m = cachedMenuData[getDayFromText(text)||day]; return m ? ` <b>☕ Snacks:</b> ${m.snacks}` : "Menu loading ⏳"; }
+  if (/dinner|supper/i.test(text)) { const m = cachedMenuData[getDayFromText(text)||day]; return m ? ` <b>🍛 Dinner:</b> ${m.dinner}` : "Menu loading ⏳"; }
   if (/dessert|sweet|mithai/i.test(text)) {
     const m = cachedMenuData[getDayFromText(text)||day];
     if (!m) return "Menu loading ⏳";
-    return m.dessert && m.dessert !== "-" ? `🍦 <b>Dessert:</b> ${m.dessert}` : "No dessert listed for today 😔";
+    return m.dessert && m.dessert !== "-" ? ` <b>🍦 Dessert:</b> ${m.dessert}` : "No dessert listed for today ";
   }
 
   // Timings
   if (/time|timing|when|open|close|hour/i.test(text)) {
     const isWE = (day === "Saturday" || day === "Sunday");
     const t    = getActiveTimings(day);
-    return `🕒 <b>Mess Timings (${isWE?"Weekend":"Weekday"}):</b><br>🍳 ${t.breakfast}<br>🍱 ${t.lunch}<br>☕ ${t.snacks}<br>🍛 ${t.dinner}`;
+    return ` <b>Mess Timings (${isWE?"Weekend":"Weekday"}):</b><br> ${t.breakfast}<br> ${t.lunch}<br> ${t.snacks}<br> ${t.dinner}`;
   }
 
   // Notice
   if (/notice|announcement|update|news/i.test(text)) {
-    return `📢 <b>${latestNotice.title}:</b><br>${latestNotice.content}`;
+    return ` <b>${latestNotice.title}:</b><br>${latestNotice.content}`;
   }
 
   // Complaint
   if (/complain|complaint|issue|problem|bad food|hygiene/i.test(text)) {
-    return `To file a complaint, tap the <b>＋</b> button at the bottom-right and select 📢 or <a href="complaint.html" style="color:var(--accent);font-weight:600">click here</a>. Your message goes directly to the Mess Committee via WhatsApp! 💪`;
+    return `To file a complaint, tap the <b>＋</b> button at the bottom-right and select  or <a href="complaint.html" style="color:var(--accent);font-weight:600">click here</a>. Your message goes directly to the Mess Committee via WhatsApp! `;
   }
 
   // Rebate
   if (/rebate|leave|absent|refund/i.test(text)) {
-    return `To apply for a mess rebate, visit <a href="http://10.15.7.7/messIITP/web/index.php" target="_blank" style="color:var(--accent);font-weight:600">the mess portal</a>. Submit your leave dates to get a refund!`;
+    return `To apply for a mess rebate, visit <a href="http://10.15.7.7/messIITP/web/index.php" target="_blank" style="color:var(--accent);font-weight:600">the mess portal</a>. ✅ Submit your leave dates to get a refund!`;
   }
 
   // Veg/Non-veg
@@ -723,28 +723,28 @@ function generateBotResponse(text, raw) {
     if (!menu) return "Menu loading ⏳";
     const all = Object.values(menu).join(" ").toLowerCase();
     const items = ["chicken","egg","mutton","fish"].filter(x => all.includes(x));
-    return items.length ? `Today's non-veg: <b>${items.map(x => x.charAt(0).toUpperCase()+x.slice(1)).join(", ")}</b> 🍗` : `Today looks like a veg day! 🌱`;
+    return items.length ? `Today's non-veg: <b>${items.map(x => x.charAt(0).toUpperCase()+x.slice(1)).join(", ")}</b> ` : `Today looks like a veg day! `;
   }
 
   // Paneer days
   if (/paneer/i.test(text)) {
     const days = DAYS.filter(d => { const m = cachedMenuData[d]; return m && Object.values(m).some(v => v && v.toLowerCase().includes("paneer")); });
-    return days.length ? `Paneer available on: <b>${days.join(", ")}</b> 🧀` : "Checking... try again once the menu loads fully!";
+    return days.length ? `Paneer available on: <b>${days.join(", ")}</b> ` : "Checking... try again once the menu loads fully!";
   }
 
   // Dark mode
   if (/dark mode|night mode|light mode/i.test(text)) {
-    return "Toggle dark/light mode using the 🌙/☀️ button at the top-right corner!";
+    return "Toggle dark/light mode using the / button at the top-right corner!";
   }
 
   // Thanks / bye / how are you
-  if (/thank|thanks/i.test(text)) return "You're welcome! 😊 Enjoy your meal! 🍽️";
-  if (/bye|goodbye/i.test(text))  return "Bye! Have a great day! 😄 Let me know if you need anything.";
-  if (/how are you/i.test(text))  return "I'm doing great, always ready to help! 😄 Ask me anything about the mess.";
-  if (/who made|creator|developer/i.test(text)) return "I was created by <b>Goutam (G.K.G)</b> to make mess life easier for CVR students! 🚀";
+  if (/thank|thanks/i.test(text)) return "You're welcome!  Enjoy your meal! ";
+  if (/bye|goodbye/i.test(text))  return "Bye! Have a great day!  Let me know if you need anything.";
+  if (/how are you/i.test(text))  return "I'm doing great, always ready to help!  Ask me anything about the mess.";
+  if (/who made|creator|developer/i.test(text)) return "I was created by <b>Goutam (G.K.G)</b> to make mess life easier for CVR students! ";
 
   // Fallback
-  const tips = ["Try: 'Today's menu', 'Monday dinner', 'What time is lunch?' 🍽️", "I can help with menu, timings, notices, special events, dish photos & complaints!", "Ask me: 'Any special tonight?' or 'Show dish photos' 📸"];
+  const tips = ["Try: 'Today's menu', 'Monday dinner', 'What time is lunch?' ", "I can help with menu, timings, notices, special events, dish photos & complaints!", "Ask me: 'Any special tonight?' or 'Show dish photos' "];
   return `I'm not sure about "<i>${esc(raw.substring(0,40))}</i>".<br><br>${tips[Math.floor(Math.random()*tips.length)]}`;
 }
 
@@ -779,7 +779,7 @@ window.allowNotifications = async function() {
     // Ask for browser notification permission
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
-      showToast("🔔 Notifications enabled! You'll be notified of menu updates.", "success");
+      showToast(" Notifications enabled! You'll be notified of menu updates.", "success");
       // Also trigger OneSignal native prompt if available
       if (window._OneSignal) {
         try { await window._OneSignal.Slidedown.promptPush(); } catch(_) {}

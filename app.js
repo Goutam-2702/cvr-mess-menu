@@ -62,7 +62,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
     const menuOut = document.querySelector('#menuOutput .loading-spinner');
     if (menuOut) {
-      document.getElementById('menuOutput').innerHTML = '<div class="menu-card"><p style="text-align:center;color:var(--red)">⚠️ Connection error or loading timeout.</p><button onclick="location.reload()" style="padding:8px 16px; margin: 10px auto; display: block; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text);">Retry Connection</button></div>';
+      document.getElementById('menuOutput').innerHTML = '<div class="menu-card"><p style="text-align:center;color:var(--red)"> Connection error or loading timeout.</p><button onclick="location.reload()" style="padding:8px 16px; margin: 10px auto; display: block; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text);">Retry Connection</button></div>';
     }
   }, 6000);
 });
@@ -141,7 +141,7 @@ function exportWeeklyMenuToPdf() {
   let html = `
     <div class="print-weekly-header">
       <div class="print-header-content">
-        <h1>🗓️ ${hostelName} - Weekly Mess Menu</h1>
+        <h1> ${hostelName} - Weekly Mess Menu</h1>
         <p class="print-subtitle">Generated on ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
       </div>
     </div>
@@ -160,19 +160,19 @@ function exportWeeklyMenuToPdf() {
         <h3>${day}</h3>
         <div class="print-meal-list">
           <div class="print-meal-item">
-            <span class="print-meal-lbl">🍳 Breakfast</span>
+            <span class="print-meal-lbl"> Breakfast</span>
             <span class="print-meal-txt">${menu.breakfast || '—'}</span>
           </div>
           <div class="print-meal-item">
-            <span class="print-meal-lbl">🍱 Lunch</span>
+            <span class="print-meal-lbl"> Lunch</span>
             <span class="print-meal-txt">${menu.lunch || '—'}</span>
           </div>
           <div class="print-meal-item">
-            <span class="print-meal-lbl">☕ Snacks</span>
+            <span class="print-meal-lbl"> Snacks</span>
             <span class="print-meal-txt">${menu.snacks || '—'}</span>
           </div>
           <div class="print-meal-item">
-            <span class="print-meal-lbl">🍛 Dinner</span>
+            <span class="print-meal-lbl"> Dinner</span>
             <span class="print-meal-txt">${menu.dinner || '—'}</span>
           </div>
     `;
@@ -180,7 +180,7 @@ function exportWeeklyMenuToPdf() {
     if (menu.dessert && menu.dessert !== '-' && menu.dessert !== '—') {
       html += `
           <div class="print-meal-item print-dessert-item">
-            <span class="print-meal-lbl">🍦 Dessert</span>
+            <span class="print-meal-lbl"> Dessert</span>
             <span class="print-meal-txt">${menu.dessert}</span>
           </div>
       `;

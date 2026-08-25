@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Function to check if user is manager (via Firebase Auth)
+    function isManager() {
+      return request.auth != null;
+    }
+
+    // Daily Config (Manager only can write, anyone can read)
+    match /snack_configs/{date} {
+      allow read: if true;
+      allow write: if isManager();
+    }
+
+    // Bookings (Students can create PENDING, Manager can do anything)
+    match /snack_bookings/{bookingId} {
+      allow read: if true;
+      
+      // Students can ONLY CREATE a booking (cannot overwrite or update)
+      // They MUST set paymentStatus to PENDING
+      allow create: if !isManager() 
+                    && request.resource.data.paymentStatus == 'PENDING'
+                    && request.resource.data.collectionStatus == 'NOT_COLLECTED';
+                    
+      // Only manager can update (e.g. mark as PAID or COLLECTED) or delete
+      allow update, delete: if isManager();
+    }
+  }
+}

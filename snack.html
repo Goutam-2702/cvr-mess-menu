@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IIT Patna Mess — Book paid snacks in advance. Pre-book, pay via UPI, get your QR code.">
+  <meta name="theme-color" content="#003366">
+  <title>🍪 Snack Booking — IITP Mess</title>
+  <link rel="stylesheet" href="snack.css" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="logo.png">
+</head>
+<body>
+
+  <!-- TOAST -->
+  <div id="toast-container"></div>
+
+  <!-- DARK MODE -->
+  <button id="darkModeToggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode"></button>
+
+  <!-- HEADER -->
+  <header class="snack-header">
+    <a href="index.html" class="back-link" aria-label="Back to menu">← Menu</a>
+    <h1> 🍪 Snack Booking</h1>
+    <p class="subtitle">Pre-book your paid snack & skip the crowd</p>
+  </header>
+
+  <!-- NOTIFICATION BANNER -->
+  <div class="notif-banner" id="notifBanner" style="display:none;">
+    <span id="notifBannerText"></span>
+    <button onclick="this.parentElement.style.display='none'" aria-label="Dismiss"></button>
+  </div>
+
+  <!-- SERVING STATUS BANNER (shown when manager pauses/stops) -->
+  <div class="serving-banner" id="servingBanner" style="display:none;">
+    <span id="servingBannerText"></span>
+  </div>
+
+  <!-- TODAY'S SNACK CARD -->
+  <section class="snack-card" id="todaySnackCard">
+    <div class="snack-card-loading">
+      <div class="spinner"></div>
+      <span>Loading today's snack…</span>
+    </div>
+  </section>
+
+  <!-- BOOKING FORM (hidden by default) -->
+  <section class="booking-form-section" id="bookingFormSection" style="display:none;">
+    <div class="section-title"> Book Your Snack</div>
+    <form id="bookingForm" autocomplete="off">
+      <div class="form-group">
+        <label for="studentName">Full Name</label>
+        <input type="text" id="studentName" required placeholder="e.g. Goutam Kumar">
+      </div>
+      <div class="form-group">
+        <label for="rollNumber">Roll Number</label>
+        <input type="text" id="rollNumber" required placeholder="e.g. 2301CS42" pattern="[A-Za-z0-9]+" style="text-transform:uppercase;">
+      </div>
+      <div class="form-group">
+        <label for="studentEmail">IITP Email</label>
+        <input type="email" id="studentEmail" required placeholder="yourroll@iitp.ac.in">
+      </div>
+      <div class="form-group">
+        <label for="studentHostel">Hostel</label>
+        <select id="studentHostel" required>
+          <option value="">Select Hostel</option>
+          <option value="Aryabhatt">Aryabhatt</option>
+          <option value="C V Raman">C V Raman</option>
+        </select>
+      </div>
+
+      <div class="snack-summary-box" id="snackSummaryBox">
+        <div class="summary-row">
+          <span>Snack</span>
+          <strong id="summarySnackName">—</strong>
+        </div>
+        <div class="summary-row quantity-row">
+          <span>Quantity</span>
+          <div class="qty-control">
+            <button type="button" class="qty-btn" id="qtyMinus" aria-label="Decrease">−</button>
+            <span class="qty-value" id="qtyValue">1</span>
+            <button type="button" class="qty-btn" id="qtyPlus" aria-label="Increase">+</button>
+          </div>
+        </div>
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <strong id="summaryTotal">₹0</strong>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary btn-full" id="proceedPayBtn">
+         💳 Proceed to Payment
+      </button>
+    </form>
+  </section>
+
+  <!-- PAYMENT SECTION (hidden by default) -->
+  <section class="payment-section" id="paymentSection" style="display:none;">
+    <div class="section-title"> 💳 Pay via UPI</div>
+    <div class="payment-card">
+      <p class="payment-instruction">Scan the QR code below or use the UPI ID to pay.</p>
+      <div class="upi-qr-box" id="upiQrBox">
+        <!-- UPI QR code will be generated here -->
+      </div>
+      <div class="upi-id-box">
+        <span>UPI ID:</span>
+        <strong id="upiIdDisplay">messfee@iitp</strong>
+        <button type="button" class="copy-btn" onclick="copyUpiId()" aria-label="Copy UPI ID"></button>
+      </div>
+      <div class="payment-amount-box">
+        <span>Amount to Pay</span>
+        <strong id="paymentAmount">₹0</strong>
+      </div>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label for="utrInput">Enter UTR / Transaction Reference Number</label>
+        <input type="text" id="utrInput" required placeholder="e.g. 412345678901" minlength="6">
+        <p class="hint">You'll find this in your UPI app's transaction history after payment.</p>
+      </div>
+
+      <button type="button" class="btn-primary btn-full" id="submitPaymentBtn" onclick="submitPayment()">
+         ✅ Submit Payment
+      </button>
+      <button type="button" class="btn-secondary btn-full" onclick="cancelPayment()">
+        ← Go Back
+      </button>
+    </div>
+  </section>
+
+  <!-- BOOKING CONFIRMATION (hidden by default) -->
+  <section class="confirmation-section" id="confirmationSection" style="display:none;">
+    <div class="confirmation-card">
+      <div class="confirm-icon"></div>
+      <h2>Booking Submitted!</h2>
+      <p class="confirm-sub" id="confirmStatusText">Your payment is being verified by the manager. You'll see your QR code once approved.</p>
+
+      <div class="confirm-details" id="confirmDetails">
+        <!-- filled by JS -->
+      </div>
+
+      <div class="qr-code-box" id="confirmQrBox" style="display:none;">
+        <p class="qr-label">Show this QR at the counter</p>
+        <div id="confirmQrCode"></div>
+      </div>
+
+      <button type="button" class="btn-secondary btn-full" onclick="goToMyBookings()">
+         View 📋 My Bookings
+      </button>
+      <a href="index.html" class="btn-link">← Back to Menu</a>
+    </div>
+  </section>
+
+  <!-- MY BOOKINGS (hidden by default) -->
+  <section class="my-bookings-section" id="myBookingsSection" style="display:none;">
+    <div class="section-title"> 📋 My Bookings</div>
+    <div id="myBookingsList" class="bookings-list">
+      <div class="bookings-empty">No bookings yet.</div>
+    </div>
+    <button type="button" class="btn-secondary btn-full" onclick="showTodaySnack()" style="margin-top:16px;">
+      ← Back to Today's Snack
+    </button>
+  </section>
+
+  <!-- QR MODAL (full-screen QR display) -->
+  <div class="qr-modal-overlay" id="qrModal" style="display:none;" onclick="closeQrModal()">
+    <div class="qr-modal" onclick="event.stopPropagation()">
+      <button class="qr-modal-close" onclick="closeQrModal()" aria-label="Close"></button>
+      <h3>Your Booking QR</h3>
+      <div id="qrModalContent"></div>
+      <p class="qr-modal-id" id="qrModalId"></p>
+      <p class="qr-modal-hint">Show this to the manager at the counter</p>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="navToday" onclick="showTodaySnack()">
+      <span class="nav-icon"></span>
+      <span class="nav-label">Today</span>
+    </button>
+    <button class="nav-item" id="navBookings" onclick="goToMyBookings()">
+      <span class="nav-icon"></span>
+      <span class="nav-label">📋 My Bookings</span>
+    </button>
+    <a href="index.html" class="nav-item">
+      <span class="nav-icon"></span>
+      <span class="nav-label">Menu</span>
+    </a>
+  </nav>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>Made with  by <strong>Goutam (G.K.G)</strong></span>
+    <span>·</span>
+    <a href="manager-dashboard.html">Manager Dashboard</a>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="snack.js"></script>
+</body>
+</html>

@@ -272,7 +272,7 @@
   <div class="complaint-card">
     <!-- HEADER -->
     <div class="card-header">
-      <span class="header-icon">📢</span>
+      <span class="header-icon"></span>
       <h1>Mess Complaint Box</h1>
       <p>Your feedback goes directly to the Mess Committee via WhatsApp. We take every complaint seriously.</p>
     </div>
@@ -281,9 +281,9 @@
     <div class="form-body" id="complaintForm">
 
       <div class="info-row">
-        <span class="info-chip">⚡ Instant WhatsApp delivery</span>
-        <span class="info-chip">🔒 Anonymous option</span>
-        <span class="info-chip">📱 Quick response</span>
+        <span class="info-chip"> Instant WhatsApp delivery</span>
+        <span class="info-chip"> Anonymous option</span>
+        <span class="info-chip"> Quick response</span>
       </div>
 
       <!-- Name -->
@@ -297,22 +297,22 @@
         <label>Issue Category *</label>
         <div class="category-grid">
           <input type="radio" name="cat" id="cat1" class="cat-option" value="Food Quality" checked>
-          <label for="cat1" class="cat-label"><span class="cat-emoji">🍽️</span>Food Quality</label>
+          <label for="cat1" class="cat-label"><span class="cat-emoji"></span>Food Quality</label>
 
           <input type="radio" name="cat" id="cat2" class="cat-option" value="Hygiene/Cleanliness">
-          <label for="cat2" class="cat-label"><span class="cat-emoji">🧹</span>Hygiene</label>
+          <label for="cat2" class="cat-label"><span class="cat-emoji"></span>Hygiene</label>
 
           <input type="radio" name="cat" id="cat3" class="cat-option" value="Shortage of Food">
-          <label for="cat3" class="cat-label"><span class="cat-emoji">📦</span>Food Shortage</label>
+          <label for="cat3" class="cat-label"><span class="cat-emoji"></span>Food Shortage</label>
 
           <input type="radio" name="cat" id="cat4" class="cat-option" value="Staff Behavior">
-          <label for="cat4" class="cat-label"><span class="cat-emoji">👤</span>Staff Behavior</label>
+          <label for="cat4" class="cat-label"><span class="cat-emoji"></span>Staff Behavior</label>
 
           <input type="radio" name="cat" id="cat5" class="cat-option" value="Late Service">
           <label for="cat5" class="cat-label"><span class="cat-emoji">⏰</span>Late Service</label>
 
           <input type="radio" name="cat" id="cat6" class="cat-option" value="Other">
-          <label for="cat6" class="cat-label"><span class="cat-emoji">📝</span>Other</label>
+          <label for="cat6" class="cat-label"><span class="cat-emoji"></span>Other</label>
         </div>
       </div>
 
@@ -321,16 +321,16 @@
         <label>Severity Level</label>
         <div class="severity-row">
           <input type="radio" name="sev" id="sev1" class="sev-option" value="Low" checked>
-          <label for="sev1" class="sev-label">😐 Low</label>
+          <label for="sev1" class="sev-label"> Low</label>
 
           <input type="radio" name="sev" id="sev2" class="sev-option" value="Medium">
-          <label for="sev2" class="sev-label">⚠️ Medium</label>
+          <label for="sev2" class="sev-label"> Medium</label>
 
           <input type="radio" name="sev" id="sev3" class="sev-option" value="High">
-          <label for="sev3" class="sev-label">🔴 High</label>
+          <label for="sev3" class="sev-label"> High</label>
 
           <input type="radio" name="sev" id="sev4" class="sev-option" value="Critical">
-          <label for="sev4" class="sev-label">🚨 Critical</label>
+          <label for="sev4" class="sev-label"> Critical</label>
         </div>
       </div>
 
@@ -346,11 +346,11 @@
         <label>Attach Photo <span style="font-weight:400;text-transform:none">(optional)</span></label>
         <div class="file-zone">
           <input type="file" id="file-upload" accept="image/*" onchange="onFileSelect()">
-          <div class="file-zone-icon">📷</div>
+          <div class="file-zone-icon"></div>
           <div class="file-zone-text">Tap to attach a photo</div>
           <div class="file-zone-sub">JPG, PNG up to 10 MB</div>
         </div>
-        <div id="fileNameDisplay">✅ <span id="fName"></span></div>
+        <div id="fileNameDisplay"> <span id="fName"></span></div>
       </div>
 
       <div class="divider">Send via</div>
@@ -364,7 +364,7 @@
 
     <!-- SUCCESS STATE -->
     <div class="success-state" id="successState">
-      <div class="success-icon">✅</div>
+      <div class="success-icon"></div>
       <div class="success-title">Complaint Submitted!</div>
       <div class="success-msg">Your complaint has been sent to the Mess Committee via WhatsApp. We'll look into it as soon as possible. Thank you for helping us improve!</div>
       <button class="new-complaint-btn" onclick="resetForm()">+ Submit Another Complaint</button>
@@ -408,11 +408,11 @@
       const phoneNumber = "918900353151";
       let photoNote = "";
       if (fileInput.files.length > 0) {
-        photoNote = "%0A%0A📸 *Note:* A photo is attached (" + fileInput.files[0].name + ")";
+        photoNote = "%0A%0A *Note:* A photo is attached (" + fileInput.files[0].name + ")";
       }
 
       const now = new Date().toLocaleString("en-IN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" });
-      const msg = `*🔔 CVR Mess Complaint*%0A` +
+      const msg = `* CVR Mess Complaint*%0A` +
                   `━━━━━━━━━━━━━━━━━━━━%0A` +
                   `*From:* ${name}%0A` +
                   `*Category:* ${category}%0A` +

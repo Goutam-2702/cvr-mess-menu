@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IITP Mess Manager Dashboard — Manage snack bookings, scan QR codes, control serving flow.">
+  <meta name="theme-color" content="#003366">
+  <title>Manager Dashboard — IITP Mess</title>
+  <link rel="stylesheet" href="snack.css" />
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+  <!-- TOAST -->
+  <div id="toast-container"></div>
+
+  <!-- DARK MODE -->
+  <button id="darkModeToggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode"></button>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       LOGIN SCREEN
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="loginScreen">
+    <div class="login-container">
+      <div style="font-size:48px; margin-bottom:8px;"></div>
+      <h2>Manager Login</h2>
+      <p>Authorized mess staff only</p>
+      <form id="loginForm" autocomplete="off">
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" required placeholder="manager@iitp.ac.in">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn-primary btn-full" id="loginBtn"> Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MANAGER DASHBOARD (hidden until login)
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="dashboardScreen" style="display:none;">
+
+    <!-- HEADER -->
+    <header class="manager-header">
+      <a href="index.html" class="back-link">← Menu</a>
+      <h1> Manager Dashboard</h1>
+      <button class="logout-btn" onclick="logoutManager()">Logout</button>
+    </header>
+
+    <!-- STATUS STRIP -->
+    <div class="status-strip" id="statusStrip">
+      <span class="status-chip badge-closed" id="bookingStatusChip"> CLOSED</span>
+      <span class="status-chip badge-open" id="servingStatusChip">⏳ WAITING</span>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon"></div>
+        <div class="stat-value" id="statTotalBookings">0</div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"></div>
+        <div class="stat-value" id="statCollected">0</div>
+        <div class="stat-label">Collected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"></div>
+        <div class="stat-value" id="statRemaining">0</div>
+        <div class="stat-label">Remaining</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"></div>
+        <div class="stat-value" id="statTotalAmount">₹0</div>
+        <div class="stat-label">Total Amount</div>
+      </div>
+    </div>
+
+    <!-- MANAGER TABS -->
+    <div class="manager-tabs" id="managerTabs">
+      <button class="manager-tab active" data-tab="overview" onclick="switchTab('overview')"> Overview</button>
+      <button class="manager-tab" data-tab="scanner" onclick="switchTab('scanner')"> Scan QR</button>
+      <button class="manager-tab" data-tab="verify" onclick="switchTab('verify')"> Verify</button>
+      <button class="manager-tab" data-tab="bookings" onclick="switchTab('bookings')"> Bookings</button>
+      <button class="manager-tab" data-tab="config" onclick="switchTab('config')"> Config</button>
+    </div>
+
+    <!-- ═══ TAB: OVERVIEW ═══ -->
+    <div class="tab-content" id="tab-overview">
+
+      <!-- Prep Summary (shown after 4 PM) -->
+      <div class="prep-summary" id="prepSummary" style="display:none;">
+        <h3> Final Snack Preparation</h3>
+        <div class="prep-grid">
+          <div class="prep-item">
+            <div class="prep-label">Confirmed Bookings</div>
+            <div class="prep-value" id="prepConfirmed">0</div>
+          </div>
+          <div class="prep-item">
+            <div class="prep-label">Total Qty Required</div>
+            <div class="prep-value" id="prepQty">0</div>
+          </div>
+          <div class="prep-item">
+            <div class="prep-label">Suggested Prep</div>
+            <div class="prep-value" id="prepSuggested">0</div>
+          </div>
+          <div class="prep-item">
+            <div class="prep-label">Expected Students</div>
+            <div class="prep-value" id="prepExpected">0</div>
+          </div>
+        </div>
+        <p style="margin-top:12px; font-size:13px; color:var(--text3);">Booking is now closed. Prepare snacks based on confirmed count.</p>
+      </div>
+
+      <!-- 📊 Crowd Control -->
+      <div class="crowd-control">
+        <div class="section-title"> Crowd Management</div>
+        <div class="crowd-indicator" id="crowdIndicator">
+          <span> LOW CROWD</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; text-align:center;">
+          <div>
+            <div style="font-size:12px; color:var(--text3); font-weight:600;">EXPECTED</div>
+            <div style="font-size:1.5rem; font-weight:800;" id="crowdExpected">0</div>
+          </div>
+          <div>
+            <div style="font-size:12px; color:var(--text3); font-weight:600;">REMAINING</div>
+            <div style="font-size:1.5rem; font-weight:800;" id="crowdRemaining">0</div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--text3); font-weight:600; margin-bottom:4px;">CURRENT CROWD</div>
+          <div class="crowd-update">
+            <button class="qty-btn" onclick="updateCrowd(-1)" aria-label="Decrease">−</button>
+            <span class="qty-value" id="crowdValue">0</span>
+            <button class="qty-btn" onclick="updateCrowd(1)" aria-label="Increase">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Serving Controls -->
+      <div class="section-title"> Serving Controls</div>
+      <div class="serving-controls" id="servingControls">
+        <button class="btn-success" onclick="setServing('IN_PROGRESS')"> Start Serving</button>
+        <button class="btn-warning" onclick="setServing('PAUSED')">⏸ Pause</button>
+        <button class="btn-danger" onclick="setServing('STOPPED')"> Stop</button>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: QR SCANNER ═══ -->
+    <div class="tab-content" id="tab-scanner" style="display:none;">
+      <div class="scanner-section">
+        <h3> Scan Booking QR</h3>
+        <div id="qr-reader"></div>
+        <button class="btn-primary btn-full" style="margin-top:16px;" id="startScanBtn" onclick="startScanner()">
+           Start Scanner
+        </button>
+        <button class="btn-secondary btn-full" style="margin-top:8px; display:none;" id="stopScanBtn" onclick="stopScanner()">
+          ⏹ Stop Scanner
+        </button>
+
+        <!-- Manual Entry -->
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+          <div class="section-title" style="font-size:14px;">Or enter Booking ID manually</div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="manualBookingId" placeholder="e.g. SNK-20260825-1042" style="flex:1; padding:12px; border-radius:var(--r-sm); border:1px solid var(--border); background:var(--surface2); color:var(--text); font-family:inherit;">
+            <button class="btn-primary" onclick="manualLookup()" style="white-space:nowrap;"> Lookup</button>
+          </div>
+        </div>
+
+        <!-- Scan Result -->
+        <div class="scan-result" id="scanResult" style="display:none;">
+          <div id="scanResultContent"></div>
+          <button class="give-snack-btn btn-success" id="giveSnackBtn" onclick="giveSnack()" style="display:none;">
+             GIVE SNACK
+          </button>
+          <div id="scanError" style="display:none; text-align:center; padding:16px; color:var(--red); font-weight:700;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: VERIFY PAYMENTS ═══ -->
+    <div class="tab-content" id="tab-verify" style="display:none;">
+      <div class="section-title"> Pending Payment Verification</div>
+      <p style="color:var(--text3); font-size:13px; margin-bottom:16px;">
+        Check each UTR in your UPI app, then click Approve or Reject.
+      </p>
+      <div id="pendingList" class="bookings-list">
+        <div class="bookings-empty">Loading…</div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: BOOKINGS TABLE ═══ -->
+    <div class="tab-content" id="tab-bookings" style="display:none;">
+      <div class="bookings-table-section">
+        <div class="section-title"> Today's Bookings</div>
+        <div class="table-controls">
+          <input type="text" id="searchInput" placeholder="Search by name, roll, booking ID, hostel…" oninput="filterBookings()">
+        </div>
+        <div class="filter-chips" id="filterChips">
+          <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">All</button>
+          <button class="filter-chip" data-filter="paid" onclick="setFilter('paid')"> Paid</button>
+          <button class="filter-chip" data-filter="pending" onclick="setFilter('pending')">⏳ Pending</button>
+          <button class="filter-chip" data-filter="collected" onclick="setFilter('collected')"> Collected</button>
+          <button class="filter-chip" data-filter="not_collected" onclick="setFilter('not_collected')"> Not Collected</button>
+        </div>
+        <div class="table-wrap">
+          <table class="booking-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Roll</th>
+                <th>Hostel</th>
+                <th>Snack</th>
+                <th>Qty</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Collection</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+              <tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text3);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: CONFIG ═══ -->
+    <div class="tab-content" id="tab-config" style="display:none;">
+      <div class="config-section">
+        <div class="section-title"> Today's Snack Configuration</div>
+        <form id="configForm" autocomplete="off">
+          <div class="config-grid">
+            <div class="form-group">
+              <label for="cfgSnackName">Snack Name</label>
+              <input type="text" id="cfgSnackName" required placeholder="e.g. Samosa + Tea">
+            </div>
+            <div class="form-group">
+              <label for="cfgPrice">Price (₹)</label>
+              <input type="number" id="cfgPrice" required placeholder="20" min="1">
+            </div>
+            <div class="form-group">
+              <label for="cfgMaxQty">Max Bookings</label>
+              <input type="number" id="cfgMaxQty" required placeholder="200" min="1">
+            </div>
+            <div class="form-group">
+              <label for="cfgDeadline">Booking Deadline</label>
+              <input type="text" id="cfgDeadline" required placeholder="4:00 PM" value="4:00 PM">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cfgServingTime">Serving Time</label>
+            <input type="text" id="cfgServingTime" required placeholder="5:30 PM" value="5:30 PM">
+          </div>
+          <div style="display:flex; gap:10px; margin-top:16px;">
+            <button type="submit" class="btn-primary btn-full"> 💾 Save Configuration</button>
+          </div>
+        </form>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button class="btn-success btn-full" onclick="toggleBookingStatus('OPEN')"> Open Booking</button>
+          <button class="btn-danger btn-full" onclick="toggleBookingStatus('CLOSED')"> Close Booking</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>IITP Mess — Manager Dashboard</span>
+    <span>·</span>
+    <a href="snack.html">Student Booking</a>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script type="module" src="manager.js"></script>
+</body>
+</html>
