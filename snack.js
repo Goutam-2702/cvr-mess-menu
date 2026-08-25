@@ -28,7 +28,7 @@ let currentBooking = null;
 let quantity = 1;
 const MAX_QTY = 5;
 
-const UPI_ID = "messfee@iitp";  // Change to actual UPI ID
+const UPI_ID = "Q225863582@ybl";  // Change to actual UPI ID
 
 /* ─── HELPERS ─────────────────────────────────────────────── */
 function todayStr() {
@@ -306,21 +306,6 @@ function proceedToPayment() {
   document.getElementById('paymentSection').style.display = 'block';
   document.getElementById('paymentAmount').textContent = `₹${total}`;
   document.getElementById('upiIdDisplay').textContent = UPI_ID;
-
-  // Generate UPI QR
-  const upiUrl = `upi://pay?pa=${UPI_ID}&pn=IITP%20Mess&am=${total}&cu=INR&tn=Snack-${roll}`;
-  const qrBox = document.getElementById('upiQrBox');
-  qrBox.innerHTML = '';
-  if (typeof QRCode !== 'undefined') {
-    new QRCode(qrBox, {
-      text: upiUrl,
-      width: 200,
-      height: 200,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.L
-    });
-  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }

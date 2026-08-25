@@ -99,13 +99,13 @@
     <div class="section-title"> 💳 Pay via UPI</div>
     <div class="payment-card">
       <p class="payment-instruction">Scan the QR code below or use the UPI ID to pay.</p>
-      <div class="upi-qr-box" id="upiQrBox">
-        <!-- UPI QR code will be generated here -->
+      <div class="upi-qr-box" id="upiQrBox" style="padding: 10px; background: white; border-radius: 12px; margin-bottom: 12px;">
+        <img src="payment-qr.png" alt="Payment QR" style="width: 100%; max-width: 200px; display: block; margin: 0 auto; border-radius: 8px;">
       </div>
       <div class="upi-id-box">
         <span>UPI ID:</span>
-        <strong id="upiIdDisplay">messfee@iitp</strong>
-        <button type="button" class="copy-btn" onclick="copyUpiId()" aria-label="Copy UPI ID"></button>
+        <strong id="upiIdDisplay">Q225863582@ybl</strong>
+        <button type="button" class="copy-btn" onclick="copyUpiId()" aria-label="Copy UPI ID">📋</button>
       </div>
       <div class="payment-amount-box">
         <span>Amount to Pay</span>

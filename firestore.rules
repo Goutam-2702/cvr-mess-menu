@@ -26,5 +26,10 @@ service cloud.firestore {
       // Only manager can update (e.g. mark as PAID or COLLECTED) or delete
       allow update, delete: if isManager();
     }
+
+    // Default rule for all other collections (menu, crowd, notices, etc.)
+    match /{document=**} {
+      allow read, write: if true;
+    }
   }
 }
