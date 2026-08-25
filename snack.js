@@ -33,7 +33,10 @@ const UPI_ID = "Q225863582@ybl";  // Change to actual UPI ID
 /* ─── HELPERS ─────────────────────────────────────────────── */
 function todayStr() {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const yr = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const da = String(d.getDate()).padStart(2, '0');
+  return `${yr}-${mo}-${da}`;
 }
 
 function showToast(msg, type = 'info') {
@@ -57,12 +60,6 @@ function isBeforeDeadline(deadlineStr) {
   const deadline = new Date(now);
   deadline.setHours(hour, min, 0, 0);
   return now < deadline;
-}
-
-function generateBookingId(roll) {
-  const d = todayStr().replace(/-/g, '');
-  const r = roll.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(-4);
-  return `SNK-${d}-${r}`;
 }
 
 function docId(roll) {
@@ -335,7 +332,7 @@ window.submitPayment = async function() {
   const email = document.getElementById('studentEmail').value.trim();
   const hostel = document.getElementById('studentHostel').value;
   const total = quantity * todayConfig.price;
-  const bookingId = generateBookingId(roll);
+  const bookingId = utr; // Use UTR as the Booking ID
   const dId = docId(roll);
 
   try {
