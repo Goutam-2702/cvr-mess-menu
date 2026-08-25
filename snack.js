@@ -467,15 +467,32 @@ window.goToMyBookings = async function() {
   setActiveNav('navBookings');
 
   const roll = localStorage.getItem('snack_roll');
-  if (!roll) {
-    document.getElementById('myBookingsList').innerHTML = '<div class="bookings-empty">Enter your roll number to see bookings.</div>';
+  const rollInput = document.getElementById('myBookingsRoll');
+  
+  if (roll && rollInput) {
+    rollInput.value = roll;
+    await fetchMyBookings();
+  } else {
+    document.getElementById('myBookingsList').innerHTML = '<div class="bookings-empty">Enter your roll number above to see bookings.</div>';
+  }
+}
+
+window.fetchMyBookings = async function() {
+  const rollInput = document.getElementById('myBookingsRoll');
+  if (!rollInput || !rollInput.value.trim()) {
+    showToast('Please enter your roll number', 'error');
     return;
   }
+  
+  const roll = rollInput.value.trim().toUpperCase();
+  localStorage.setItem('snack_roll', roll); // save for later
+
+  document.getElementById('myBookingsList').innerHTML = '<div class="bookings-empty">Loading bookings...</div>';
 
   try {
     const q = query(
       collection(db, 'snack_bookings'),
-      where('rollNumber', '==', roll.toUpperCase())
+      where('rollNumber', '==', roll)
     );
     const snap = await getDocs(q);
     if (snap.empty) {
