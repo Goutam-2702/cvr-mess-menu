@@ -375,6 +375,13 @@ window.submitPayment = async function() {
 
     await setDoc(doc(db, 'snack_bookings', dId), bookingData);
     currentBooking = bookingData;
+    
+    // Login to OneSignal with Roll Number for push notifications
+    if (window._OneSignal) {
+      try {
+        await window._OneSignal.login(roll);
+      } catch(e) { console.error('OneSignal login error', e); }
+    }
 
     showToast('Booking submitted! Awaiting manager verification.', 'success');
     showConfirmation(bookingData);
@@ -396,15 +403,39 @@ function showConfirmation(booking) {
   document.getElementById('confirmationSection').style.display = 'block';
 
   const isPaid = booking.paymentStatus === 'PAID';
-  const icon = isPaid ? '' : '⏳';
-  const title = isPaid ? 'Booking Confirmed!' : 'Booking Submitted!';
-  const sub = isPaid
-    ? 'Your payment has been verified. Show the QR code at the counter.'
-    : 'Your payment is being verified by the manager. You\'ll see your QR code once approved.';
+  const isFailed = booking.paymentStatus === 'FAILED';
+  
+  let icon = '⏳';
+  let title = 'Booking Submitted!';
+  let sub = 'Your payment is being verified by the manager. You\'ll see your QR code once approved.';
+  
+  if (isPaid) {
+    icon = '✅';
+    title = 'Booking Confirmed!';
+    sub = 'Your payment has been verified. Show the QR code at the counter.';
+  } else if (isFailed) {
+    icon = '❌';
+    title = 'Payment Rejected';
+    sub = `Reason: ${booking.rejectReason || 'Unknown error'}. Please check and try again.`;
+  }
 
   document.querySelector('.confirm-icon').textContent = icon;
   document.querySelector('.confirmation-card h2').textContent = title;
-  document.getElementById('confirmStatusText').textContent = sub;
+  
+  const statusTextEl = document.getElementById('confirmStatusText');
+  statusTextEl.textContent = sub;
+  
+  if (isFailed) {
+    statusTextEl.style.color = 'var(--red)';
+    statusTextEl.style.fontWeight = '500';
+  } else {
+    statusTextEl.style.color = 'inherit';
+    statusTextEl.style.fontWeight = 'normal';
+  }
+
+  let paymentStatusText = '⏳ Pending';
+  if (isPaid) paymentStatusText = '✅ Verified';
+  if (isFailed) paymentStatusText = '❌ Rejected';
 
   document.getElementById('confirmDetails').innerHTML = `
     <div class="confirm-row"><span>Snack</span><span>${booking.snack}</span></div>
@@ -413,12 +444,17 @@ function showConfirmation(booking) {
     <div class="confirm-row"><span>Booking ID</span><span>${booking.bookingId}</span></div>
     <div class="confirm-row"><span>Pickup Time</span><span>${todayConfig?.servingTime || '5:30 PM'}</span></div>
     <div class="confirm-row"><span>Hostel</span><span>${booking.hostel}</span></div>
-    <div class="confirm-row"><span>Payment</span><span>${isPaid ? ' Verified' : '⏳ Pending'}</span></div>
-    <div class="confirm-row"><span>Collection</span><span>${booking.collectionStatus === 'COLLECTED' ? ' Collected' : 'Not Collected'}</span></div>
+    <div class="confirm-row"><span>Payment</span><span style="${isFailed ? 'color:var(--red);font-weight:bold;' : ''}">${paymentStatusText}</span></div>
+    <div class="confirm-row"><span>Collection</span><span>${booking.collectionStatus === 'COLLECTED' ? '✅ Collected' : 'Not Collected'}</span></div>
   `;
 
   const qrBox = document.getElementById('confirmQrBox');
   const qrCode = document.getElementById('confirmQrCode');
+  
+  // Re-submit UI handling
+  const existingResubmitBtn = document.getElementById('resubmitContainer');
+  if (existingResubmitBtn) existingResubmitBtn.remove();
+  
   if (isPaid) {
     qrBox.style.display = 'inline-block';
     qrCode.innerHTML = '';

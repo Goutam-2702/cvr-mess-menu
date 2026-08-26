@@ -313,24 +313,61 @@ function renderPendingList() {
         <span class="bi-label">Amount</span><span class="bi-value">₹${b.totalAmount}</span>
         <span class="bi-label">UTR</span><span class="bi-value" style="font-family:monospace; color:var(--accent);">${b.utrNumber || '—'}</span>
       </div>
-      <div style="display:flex; gap:8px; margin-top:12px;">
-        <button class="btn-success btn-full" onclick="verifyPayment('${b.docId}', true)" style="padding:10px;"> Approve</button>
-        <button class="btn-danger btn-full" onclick="verifyPayment('${b.docId}', false)" style="padding:10px;"> Reject</button>
+      
+      <div style="margin-top:12px;">
+        <select id="rejectReason_${b.docId}" class="form-input" style="margin-bottom:8px; display:none;">
+          <option value="Invalid or Fake UTR Number">Invalid or Fake UTR Number</option>
+          <option value="Payment not received in Bank">Payment not received in Bank</option>
+          <option value="Old or Duplicate Transaction">Old or Duplicate Transaction</option>
+          <option value="Amount mismatch">Amount mismatch</option>
+        </select>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-success btn-full" onclick="verifyPayment('${b.docId}', true)" style="padding:10px;"> Approve</button>
+          <button id="rejectBtn_${b.docId}" class="btn-danger btn-full" onclick="showRejectReason('${b.docId}')" style="padding:10px;"> Reject</button>
+          <button id="confirmRejectBtn_${b.docId}" class="btn-danger btn-full" onclick="verifyPayment('${b.docId}', false)" style="padding:10px; display:none;"> Confirm Reject</button>
+        </div>
       </div>
     </div>
   `).join('');
 }
 
+window.showRejectReason = function(docId) {
+  document.getElementById(`rejectReason_${docId}`).style.display = 'block';
+  document.getElementById(`rejectBtn_${docId}`).style.display = 'none';
+  document.getElementById(`confirmRejectBtn_${docId}`).style.display = 'block';
+};
+
 window.verifyPayment = async function(docId, approve) {
   try {
     const newStatus = approve ? 'PAID' : 'FAILED';
-    await updateDoc(doc(db, 'snack_bookings', docId), { paymentStatus: newStatus });
+    const updateData = { paymentStatus: newStatus };
+    
+    let reason = null;
+    if (!approve) {
+      const reasonSelect = document.getElementById(`rejectReason_${docId}`);
+      if (reasonSelect) {
+        reason = reasonSelect.value;
+        updateData.rejectReason = reason;
+      }
+    }
+
+    await updateDoc(doc(db, 'snack_bookings', docId), updateData);
 
     if (approve) {
       // Increment totalBooked in config
       await updateDoc(doc(db, 'snack_configs', todayStr()), {
         totalBooked: increment(1)
       });
+    }
+    
+    // Find booking details for push notification
+    const booking = allBookings.find(b => b.docId === docId);
+    if (booking) {
+      sendPushNotification(
+        booking.rollNumber, 
+        approve ? 'Payment Verified!' : 'Payment Rejected', 
+        approve ? 'Your payment was successful. Show your QR code at the counter.' : `Reason: ${reason}. Please try again.`
+      );
     }
 
     showToast(approve ? 'Payment approved ' : 'Payment rejected ', approve ? 'success' : 'warning');
@@ -339,6 +376,43 @@ window.verifyPayment = async function(docId, approve) {
     showToast('Failed to verify payment', 'error');
   }
 };
+
+// --- Push Notification Trigger ---
+async function sendPushNotification(rollNumber, title, message) {
+  // To make this work, replace with your actual OneSignal REST API Key and App ID
+  const ONESIGNAL_APP_ID = "185be472-7829-4bd3-8d84-7359ff2b7d78"; 
+  // NOTE: GitHub blocked pushing this file when the real key was here.
+  // Add your key back locally if you want to use it, but don't push it!
+  const ONESIGNAL_REST_API_KEY = "YOUR_REST_API_KEY_HERE"; 
+  
+  if (ONESIGNAL_REST_API_KEY === "YOUR_REST_API_KEY_HERE") {
+    console.log("Skipping Push Notification: REST API Key not configured.");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`
+      },
+      body: JSON.stringify({
+        app_id: ONESIGNAL_APP_ID,
+        target_channel: "push",
+        // Target the specific student using their roll number as the external_id alias
+        include_aliases: {
+          external_id: [rollNumber.toUpperCase()]
+        },
+        headings: { "en": title },
+        contents: { "en": message }
+      })
+    });
+    console.log("OneSignal push sent:", await response.json());
+  } catch (err) {
+    console.error("Failed to send push notification:", err);
+  }
+}
 
 /* ─── BOOKINGS TABLE ──────────────────────────────────────── */
 function renderBookingsTable() {
